@@ -1,13 +1,13 @@
 using System.Diagnostics;
 using System.IO;
 using System.Management;
-using System.Net.Http;
-using System.Net.Sockets;
+// using System.Net.Http;
+// using System.Net.Sockets;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using ExHyperV.Models;
 using ExHyperV.Tools;
-using Renci.SshNet;
+// using Renci.SshNet;
 
 namespace ExHyperV.Services
 {
@@ -20,7 +20,7 @@ namespace ExHyperV.Services
             public string Path { get; set; }        // 虚拟文件的VHDX 路径
             public int PhysicalDiskNumber { get; set; } // 物理硬盘的 Disk Number (e.g. 0, 1, 2)
         }
-        private const string ScriptBaseUrl = "https://raw.githubusercontent.com/Justsenger/ExHyperV/main/src/Linux/script/";
+        // private const string ScriptBaseUrl = "https://raw.githubusercontent.com/Justsenger/ExHyperV/main/src/Linux/script/";
 
         // PowerShell 脚本常量
         private const string GetGpuWmiInfoScript = "Get-CimInstance -Class Win32_VideoController | select PNPDeviceID,name,AdapterCompatibility,DriverVersion";
@@ -259,33 +259,33 @@ namespace ExHyperV.Services
 
         #region 虚拟机状态与控制管理
         // SSH重新连接
-        private async Task<bool> WaitForVmToBeResponsiveAsync(string host, int port, CancellationToken cancellationToken)
-        {
-            var stopwatch = Stopwatch.StartNew();
-            while (stopwatch.Elapsed < TimeSpan.FromMinutes(1)) // 1分钟总超时
-            {
-                if (cancellationToken.IsCancellationRequested) return false;
-                try
-                {
-                    using (var client = new TcpClient())
-                    {
-                        var connectTask = client.ConnectAsync(host, port);
-                        if (await Task.WhenAny(connectTask, Task.Delay(2000, cancellationToken)) == connectTask)
-                        {
-                            await connectTask;
-                            return true;
-                        }
-                    }
-                }
-                catch { }
-                await Task.Delay(5000, cancellationToken);
-            }
-            return false; // 超时
-        }
+        // private async Task<bool> WaitForVmToBeResponsiveAsync(string host, int port, CancellationToken cancellationToken)
+        // {
+        //     var stopwatch = Stopwatch.StartNew();
+        //     while (stopwatch.Elapsed < TimeSpan.FromMinutes(1)) // 1分钟总超时
+        //     {
+        //         if (cancellationToken.IsCancellationRequested) return false;
+        //         try
+        //         {
+        //             using (var client = new TcpClient())
+        //             {
+        //                 var connectTask = client.ConnectAsync(host, port);
+        //                 if (await Task.WhenAny(connectTask, Task.Delay(2000, cancellationToken)) == connectTask)
+        //                 {
+        //                     await connectTask;
+        //                     return true;
+        //                 }
+        //             }
+        //         }
+        //         catch { }
+        //         await Task.Delay(5000, cancellationToken);
+        //     }
+        //     return false; // 超时
+        // }
 
         public Task<string> GetVmStateAsync(string vmName)
         {
-            return Task.Run(() =>
+            return Task.Run<string>(() =>
             {
                 var result = Utils.Run($"(Get-VM -Name '{vmName}').State");
                 if (result != null && result.Count > 0)
@@ -339,7 +339,7 @@ namespace ExHyperV.Services
 
             return await MMIOOptimizer.OptimizeVmAsync(vmName);
         }
-        
+
         #endregion
 
         #region 磁盘与分区操作
@@ -1082,7 +1082,7 @@ return 'OK'
             LinkSingleFile(assignedDriveLetter, "atiapfxx.blb", "atiapfxx.blb", s32);
             LinkSingleFile(assignedDriveLetter, "ativvsva.dat", "ativvsva.dat", s32);
             LinkSingleFile(assignedDriveLetter, "ativvsvl.dat", "ativvsvl.dat", s32);
-            LinkSingleFile(assignedDriveLetter, "AMDKernelEvents.mc", "AMDKernelEvents.man", s32); 
+            LinkSingleFile(assignedDriveLetter, "AMDKernelEvents.mc", "AMDKernelEvents.man", s32);
             LinkSingleFile(assignedDriveLetter, "detoured64.dll", "detoured.dll", s32);
 
             // 特殊子目录 (amdkmpfd)
@@ -1112,7 +1112,7 @@ return 'OK'
             LinkSingleFile(assignedDriveLetter, "GameManager32.dll", "GameManager32.dll", sw64);
 
             // 32位特殊命名映射
-            LinkSingleFile(assignedDriveLetter, "atiadlxy.dll", "atiadlxx.dll", sw64); 
+            LinkSingleFile(assignedDriveLetter, "atiadlxy.dll", "atiadlxx.dll", sw64);
             LinkSingleFile(assignedDriveLetter, "detoured32.dll", "detoured.dll", sw64);
 
             // 资源
@@ -1215,7 +1215,7 @@ return 'OK'
                         ExecuteCommand($"cmd /c del /f /q \"{hostLinkPath}\"");
                     }
                 }
-                catch {}
+                catch { }
 
                 var foundFiles = new DirectoryInfo(guestRepo)
                                     .GetFiles(sourceName, SearchOption.AllDirectories)
@@ -1306,224 +1306,224 @@ return 'OK'
 
         #endregion
 
-        #region Linux 驱动环境与脚本部署
-        private string FindGpuDriverSourcePath(string gpuInstancePath)
-        {
-            string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "DriverStore", "FileRepository");
-            if (Directory.Exists(path)) return path;
-            return @"C:\Windows\System32\DriverStore\FileRepository";
-        }
+        // #region Linux 驱动环境与脚本部署
+        // private string FindGpuDriverSourcePath(string gpuInstancePath)
+        // {
+        //     string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "DriverStore", "FileRepository");
+        //     if (Directory.Exists(path)) return path;
+        //     return @"C:\Windows\System32\DriverStore\FileRepository";
+        // }
 
-        private async Task UploadLocalFilesAsync(SshService sshService, SshCredentials credentials, string remoteDirectory)
-        {
-            string systemWslLibPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "lxss", "lib");
+        // private async Task UploadLocalFilesAsync(SshService sshService, SshCredentials credentials, string remoteDirectory)
+        // {
+        //     string systemWslLibPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "lxss", "lib");
 
-            if (Directory.Exists(systemWslLibPath))
-            {
-                var allFiles = Directory.GetFiles(systemWslLibPath);
-                foreach (var filePath in allFiles)
-                {
-                    string fileName = Path.GetFileName(filePath);
-                    await sshService.UploadFileAsync(credentials, filePath, $"{remoteDirectory}/{fileName}");
-                }
-            }
-        }
+        //     if (Directory.Exists(systemWslLibPath))
+        //     {
+        //         var allFiles = Directory.GetFiles(systemWslLibPath);
+        //         foreach (var filePath in allFiles)
+        //         {
+        //             string fileName = Path.GetFileName(filePath);
+        //             await sshService.UploadFileAsync(credentials, filePath, $"{remoteDirectory}/{fileName}");
+        //         }
+        //     }
+        // }
 
-        public async Task<List<LinuxScriptItem>> GetAvailableScriptsAsync()
-        {
-            var allScripts = new List<LinuxScriptItem>();
+        // public async Task<List<LinuxScriptItem>> GetAvailableScriptsAsync()
+        // {
+        //     var allScripts = new List<LinuxScriptItem>();
 
-            // --- 1. 扫描本地文件夹 ---
-            string localFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UserScripts");
-            if (!Directory.Exists(localFolder)) Directory.CreateDirectory(localFolder);
+        //     // --- 1. 扫描本地文件夹 ---
+        //     string localFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UserScripts");
+        //     if (!Directory.Exists(localFolder)) Directory.CreateDirectory(localFolder);
 
-            try
-            {
-                var files = Directory.GetFiles(localFolder, "*.sh");
-                foreach (var file in files)
-                {
-                    string content = await File.ReadAllTextAsync(file);
-                    var item = ParseScriptHeader(content);
-                    item.IsLocal = true;
-                    // 【修改点】：添加“本地”标识
-                    item.Name = string.Format(Properties.Resources.VmGPUService_1, item.Name);
-                    item.SourcePathOrUrl = file;
-                    item.FileName = Path.GetFileName(file);
-                    allScripts.Add(item);
-                }
-            }
-            catch (Exception ex) { Debug.WriteLine($"Local script scan error: {ex.Message}"); }
+        //     try
+        //     {
+        //         var files = Directory.GetFiles(localFolder, "*.sh");
+        //         foreach (var file in files)
+        //         {
+        //             string content = await File.ReadAllTextAsync(file);
+        //             var item = ParseScriptHeader(content);
+        //             item.IsLocal = true;
+        //             // 【修改点】：添加“本地”标识
+        //             item.Name = string.Format(Properties.Resources.VmGPUService_1, item.Name);
+        //             item.SourcePathOrUrl = file;
+        //             item.FileName = Path.GetFileName(file);
+        //             allScripts.Add(item);
+        //         }
+        //     }
+        //     catch (Exception ex) { Debug.WriteLine($"Local script scan error: {ex.Message}"); }
 
-            // --- 2. 远程扫描 (解析 index.json) ---
-            try
-            {
-                using var httpClient = new HttpClient();
-                httpClient.Timeout = TimeSpan.FromSeconds(5);
+        //     // --- 2. 远程扫描 (解析 index.json) ---
+        //     // try
+        //     // {
+        //     //     using var httpClient = new HttpClient();
+        //     //     httpClient.Timeout = TimeSpan.FromSeconds(5);
 
-                string jsonUrl = $"{ScriptBaseUrl}index.json";
-                var jsonString = await httpClient.GetStringAsync(jsonUrl);
+        //     //     string jsonUrl = $"{ScriptBaseUrl}index.json";
+        //     //     var jsonString = await httpClient.GetStringAsync(jsonUrl);
 
-                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-                var remoteScripts = JsonSerializer.Deserialize<List<LinuxScriptItem>>(jsonString, options);
+        //     //     var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        //     //     var remoteScripts = JsonSerializer.Deserialize<List<LinuxScriptItem>>(jsonString, options);
 
-                if (remoteScripts != null)
-                {
-                    foreach (var item in remoteScripts)
-                    {
-                        item.IsLocal = false;
-                        // 【修改点】：添加“在线”标识
-                        item.Name = string.Format(Properties.Resources.VmGPUService_2, item.Name);
-                        item.SourcePathOrUrl = $"{ScriptBaseUrl}{item.FileName}";
-                        allScripts.Add(item);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Remote script index fetch failed: {ex.Message}");
-            }
+        //     //     if (remoteScripts != null)
+        //     //     {
+        //     //         foreach (var item in remoteScripts)
+        //     //         {
+        //     //             item.IsLocal = false;
+        //     //             // 【修改点】：添加“在线”标识
+        //     //             item.Name = string.Format(Properties.Resources.VmGPUService_2, item.Name);
+        //     //             item.SourcePathOrUrl = $"{ScriptBaseUrl}{item.FileName}";
+        //     //             allScripts.Add(item);
+        //     //         }
+        //     //     }
+        //     // }
+        //     // catch (Exception ex)
+        //     // {
+        //     //     Debug.WriteLine($"Remote script index fetch failed: {ex.Message}");
+        //     // }
 
-            // 排序保持不变：本地优先，同类按名称排序
-            return allScripts
-                .OrderByDescending(x => x.IsLocal)
-                .ThenBy(x => x.Name)
-                .ToList();
-        }
+        //     // 排序保持不变：本地优先，同类按名称排序
+        //     return allScripts
+        //         .OrderByDescending(x => x.IsLocal)
+        //         .ThenBy(x => x.Name)
+        //         .ToList();
+        // }
 
-        private LinuxScriptItem ParseScriptHeader(string content)
-        {
-            var item = new LinuxScriptItem();
-            item.Name = Regex.Match(content, @"# @Name:\s*(.*)").Groups[1].Value.Trim();
-            item.Description = Regex.Match(content, @"# @Description:\s*(.*)").Groups[1].Value.Trim();
-            item.Author = Regex.Match(content, @"# @Author:\s*(.*)").Groups[1].Value.Trim();
-            item.Version = Regex.Match(content, @"# @Version:\s*(.*)").Groups[1].Value.Trim();
+        // private LinuxScriptItem ParseScriptHeader(string content)
+        // {
+        //     var item = new LinuxScriptItem();
+        //     item.Name = Regex.Match(content, @"# @Name:\s*(.*)").Groups[1].Value.Trim();
+        //     item.Description = Regex.Match(content, @"# @Description:\s*(.*)").Groups[1].Value.Trim();
+        //     item.Author = Regex.Match(content, @"# @Author:\s*(.*)").Groups[1].Value.Trim();
+        //     item.Version = Regex.Match(content, @"# @Version:\s*(.*)").Groups[1].Value.Trim();
 
-            if (string.IsNullOrEmpty(item.Name)) item.Name = "Unknown Script";
-            return item;
-        }
+        //     if (string.IsNullOrEmpty(item.Name)) item.Name = "Unknown Script";
+        //     return item;
+        // }
 
-        // 支持重启循环的部署函数
-        public Task<string> ProvisionLinuxGpuAsync(string vmName, LinuxScriptItem script, SshCredentials credentials, Action<string> progressCallback, CancellationToken ct)
-        {
-            return Task.Run(async () =>
-            {
-                void Log(string msg) => progressCallback?.Invoke(msg);
-                var sshService = new SshService();
+        // // 支持重启循环的部署函数
+        // public Task<string> ProvisionLinuxGpuAsync(string vmName, LinuxScriptItem script, SshCredentials credentials, Action<string> progressCallback, CancellationToken ct)
+        // {
+        //     return Task.Run(async () =>
+        //     {
+        //         void Log(string msg) => progressCallback?.Invoke(msg);
+        //         var sshService = new SshService();
 
-                try
-                {
-                    // --- 阶段 1: 准备工作 (IP 嗅探与连接) ---
-                    var currentState = await GetVmStateAsync(vmName);
-                    if (currentState != "Running")
-                    {
-                        Log("[ExHyperV] Starting VM...");
-                        Utils.Run($"Start-VM -Name '{vmName}'");
-                        await Task.Delay(5000);
-                    }
+        //         try
+        //         {
+        //             // --- 阶段 1: 准备工作 (IP 嗅探与连接) ---
+        //             var currentState = await GetVmStateAsync(vmName);
+        //             if (currentState != "Running")
+        //             {
+        //                 Log("[ExHyperV] Starting VM...");
+        //                 Utils.Run($"Start-VM -Name '{vmName}'");
+        //                 await Task.Delay(5000);
+        //             }
 
-                    Log(Properties.Resources.Msg_Gpu_LinuxWaitingIp);
-                    string getMacScript = $"(Get-VMNetworkAdapter -VMName '{vmName}').MacAddress | Select-Object -First 1";
-                    var macResult = await Utils.Run2(getMacScript);
-                    if (macResult == null || macResult.Count == 0) return "Failed to get VM MAC Address";
+        //             Log(Properties.Resources.Msg_Gpu_LinuxWaitingIp);
+        //             string getMacScript = $"(Get-VMNetworkAdapter -VMName '{vmName}').MacAddress | Select-Object -First 1";
+        //             var macResult = await Utils.Run2(getMacScript);
+        //             if (macResult == null || macResult.Count == 0) return "Failed to get VM MAC Address";
 
-                    string macAddress = Regex.Replace(macResult[0].ToString(), "(.{2})", "$1:").TrimEnd(':');
-                    string vmIpAddress = await Utils.GetVmIpAddressAsync(vmName, macAddress);
-                    string targetIp = Utils.SelectBestIpv4Address(!string.IsNullOrWhiteSpace(credentials.Host) ? credentials.Host : vmIpAddress);
+        //             string macAddress = Regex.Replace(macResult[0].ToString(), "(.{2})", "$1:").TrimEnd(':');
+        //             string vmIpAddress = await Utils.GetVmIpAddressAsync(vmName, macAddress);
+        //             string targetIp = Utils.SelectBestIpv4Address(!string.IsNullOrWhiteSpace(credentials.Host) ? credentials.Host : vmIpAddress);
 
-                    if (string.IsNullOrEmpty(targetIp)) return "No valid IPv4 address found.";
-                    credentials.Host = targetIp;
+        //             if (string.IsNullOrEmpty(targetIp)) return "No valid IPv4 address found.";
+        //             credentials.Host = targetIp;
 
-                    if (!await WaitForVmToBeResponsiveAsync(credentials.Host, credentials.Port, ct))
-                        return Properties.Resources.Error_Gpu_SshTimeout;
+        //             if (!await WaitForVmToBeResponsiveAsync(credentials.Host, credentials.Port, ct))
+        //                 return Properties.Resources.Error_Gpu_SshTimeout;
 
-                    // --- 阶段 2: 文件上传 (驱动与 WSL 库) ---
-                    string remoteTempDir = "/tmp/exhyperv_deploy";
-                    using (var client = new SshClient(credentials.Host, credentials.Port, credentials.Username, credentials.Password))
-                    {
-                        client.Connect();
-                        client.RunCommand($"mkdir -p {remoteTempDir}/drivers {remoteTempDir}/lib");
-                        client.Disconnect();
-                    }
+        //             // --- 阶段 2: 文件上传 (驱动与 WSL 库) ---
+        //             string remoteTempDir = "/tmp/exhyperv_deploy";
+        //             using (var client = new SshClient(credentials.Host, credentials.Port, credentials.Username, credentials.Password))
+        //             {
+        //                 client.Connect();
+        //                 client.RunCommand($"mkdir -p {remoteTempDir}/drivers {remoteTempDir}/lib");
+        //                 client.Disconnect();
+        //             }
 
-                    Log("Uploading Driver and WSL Libraries...");
-                    string sourceDriverPath = FindGpuDriverSourcePath(string.Empty);
-                    await sshService.UploadDirectoryAsync(credentials, sourceDriverPath, $"{remoteTempDir}/drivers");
-                    await UploadLocalFilesAsync(sshService, credentials, $"{remoteTempDir}/lib");
+        //             Log("Uploading Driver and WSL Libraries...");
+        //             string sourceDriverPath = FindGpuDriverSourcePath(string.Empty);
+        //             await sshService.UploadDirectoryAsync(credentials, sourceDriverPath, $"{remoteTempDir}/drivers");
+        //             await UploadLocalFilesAsync(sshService, credentials, $"{remoteTempDir}/lib");
 
-                    // --- 阶段 3: 处理自选脚本 ---
-                    string remoteScriptPath = $"{remoteTempDir}/{script.FileName}";
+        //             // --- 阶段 3: 处理自选脚本 ---
+        //             string remoteScriptPath = $"{remoteTempDir}/{script.FileName}";
 
-                    // 1. 重新计算代理前缀
-                    string proxyEnv = string.Empty;
-                    if (credentials.UseProxy && !string.IsNullOrEmpty(credentials.ProxyHost))
-                    {
-                        string proxyUrl = $"http://{credentials.ProxyHost}:{credentials.ProxyPort}";
-                        // 注入常用的环境变量，强制 wget/curl 走代理
-                        proxyEnv = $"http_proxy='{proxyUrl}' https_proxy='{proxyUrl}' HTTP_PROXY='{proxyUrl}' HTTPS_PROXY='{proxyUrl}' ";
-                    }
+        //             // 1. 重新计算代理前缀
+        //             string proxyEnv = string.Empty;
+        //             if (credentials.UseProxy && !string.IsNullOrEmpty(credentials.ProxyHost))
+        //             {
+        //                 string proxyUrl = $"http://{credentials.ProxyHost}:{credentials.ProxyPort}";
+        //                 // 注入常用的环境变量，强制 wget/curl 走代理
+        //                 proxyEnv = $"http_proxy='{proxyUrl}' https_proxy='{proxyUrl}' HTTP_PROXY='{proxyUrl}' HTTPS_PROXY='{proxyUrl}' ";
+        //             }
 
-                    if (script.IsLocal)
-                    {
-                        Log($"Uploading local script: {script.Name}");
-                        await sshService.UploadFileAsync(credentials, script.SourcePathOrUrl, remoteScriptPath);
-                    }
-                    else
-                    {
-                        Log($"Downloading remote script inside VM: {script.Name}");
-                        // 使用 sh -c 包裹，确保环境变量对后面的命令生效
-                        string downloadCmd = $"{proxyEnv}sh -c \"wget -q -O {remoteScriptPath} {script.SourcePathOrUrl} || curl -fL {script.SourcePathOrUrl} -o {remoteScriptPath}\"";
+        //             if (script.IsLocal)
+        //             {
+        //                 Log($"Uploading local script: {script.Name}");
+        //                 await sshService.UploadFileAsync(credentials, script.SourcePathOrUrl, remoteScriptPath);
+        //             }
+        //             else
+        //             {
+        //                 Log($"Downloading remote script inside VM: {script.Name}");
+        //                 // 使用 sh -c 包裹，确保环境变量对后面的命令生效
+        //                 string downloadCmd = $"{proxyEnv}sh -c \"wget -q -O {remoteScriptPath} {script.SourcePathOrUrl} || curl -fL {script.SourcePathOrUrl} -o {remoteScriptPath}\"";
 
-                        await sshService.ExecuteSingleCommandAsync(credentials, downloadCmd, Log);
-                    }
-                    await sshService.ExecuteSingleCommandAsync(credentials, $"chmod +x {remoteScriptPath}", Log);
-                    // --- 阶段 4: 状态机执行循环 ---
-                    bool isSuccess = false;
-                    int maxAttempts = 3;
+        //                 await sshService.ExecuteSingleCommandAsync(credentials, downloadCmd, Log);
+        //             }
+        //             await sshService.ExecuteSingleCommandAsync(credentials, $"chmod +x {remoteScriptPath}", Log);
+        //             // --- 阶段 4: 状态机执行循环 ---
+        //             bool isSuccess = false;
+        //             int maxAttempts = 3;
 
-                    for (int attempt = 1; attempt <= maxAttempts; attempt++)
-                    {
-                        if (ct.IsCancellationRequested) return "Cancelled";
+        //             for (int attempt = 1; attempt <= maxAttempts; attempt++)
+        //             {
+        //                 if (ct.IsCancellationRequested) return "Cancelled";
 
-                        bool rebootNeeded = false;
-                        string graphicsArg = credentials.InstallGraphics ? "true" : "false";
-                        string proxyArg = credentials.UseProxy ? $"\"http://{credentials.ProxyHost}:{credentials.ProxyPort}\"" : "\"\"";
+        //                 bool rebootNeeded = false;
+        //                 string graphicsArg = credentials.InstallGraphics ? "true" : "false";
+        //                 string proxyArg = credentials.UseProxy ? $"\"http://{credentials.ProxyHost}:{credentials.ProxyPort}\"" : "\"\"";
 
-                        // 使用 sudo -E 保证代理变量能传递给 apt
-                        string execCmd = $"echo '{credentials.Password.Replace("'", "'\\''")}' | sudo -S -E -p '' bash {remoteScriptPath} deploy {graphicsArg} {proxyArg}";
+        //                 // 使用 sudo -E 保证代理变量能传递给 apt
+        //                 string execCmd = $"echo '{credentials.Password.Replace("'", "'\\''")}' | sudo -S -E -p '' bash {remoteScriptPath} deploy {graphicsArg} {proxyArg}";
 
-                        Log($"[Attempt {attempt}] Executing script...");
+        //                 Log($"[Attempt {attempt}] Executing script...");
 
-                        await sshService.ExecuteCommandAndCaptureOutputAsync(credentials, execCmd, line =>
-                        {
-                            Log(line);
-                            if (line.Contains("[STATUS: SUCCESS]")) isSuccess = true;
-                            if (line.Contains("[STATUS: REBOOT_REQUIRED]")) rebootNeeded = true;
-                        }, TimeSpan.FromMinutes(60));
+        //                 await sshService.ExecuteCommandAndCaptureOutputAsync(credentials, execCmd, line =>
+        //                 {
+        //                     Log(line);
+        //                     if (line.Contains("[STATUS: SUCCESS]")) isSuccess = true;
+        //                     if (line.Contains("[STATUS: REBOOT_REQUIRED]")) rebootNeeded = true;
+        //                 }, TimeSpan.FromMinutes(60));
 
-                        if (isSuccess) break;
+        //                 if (isSuccess) break;
 
-                        if (rebootNeeded)
-                        {
-                            Log("!!! VM Reboot required. Restarting now...");
-                            Utils.Run($"Restart-VM -Name '{vmName}' -Force");
-                            await Task.Delay(10000); // 等待开始关机
-                            if (!await WaitForVmToBeResponsiveAsync(credentials.Host, credentials.Port, ct))
-                                return "VM failed to come back online after reboot.";
+        //                 if (rebootNeeded)
+        //                 {
+        //                     Log("!!! VM Reboot required. Restarting now...");
+        //                     Utils.Run($"Restart-VM -Name '{vmName}' -Force");
+        //                     await Task.Delay(10000); // 等待开始关机
+        //                     if (!await WaitForVmToBeResponsiveAsync(credentials.Host, credentials.Port, ct))
+        //                         return "VM failed to come back online after reboot.";
 
-                            Log("VM is back online. Resuming deployment...");
-                            continue; // 重新进入循环执行同一脚本
-                        }
+        //                     Log("VM is back online. Resuming deployment...");
+        //                     continue; // 重新进入循环执行同一脚本
+        //                 }
 
-                        // 如果既没成功也没重启信号，通常是脚本内部报错 set -e 触发了
-                        if (!isSuccess) return "Script execution failed (no success signal).";
-                    }
+        //                 // 如果既没成功也没重启信号，通常是脚本内部报错 set -e 触发了
+        //                 if (!isSuccess) return "Script execution failed (no success signal).";
+        //             }
 
-                    return isSuccess ? "OK" : "Maximum reboot attempts reached.";
+        //             return isSuccess ? "OK" : "Maximum reboot attempts reached.";
 
-                }
-                catch (Exception ex) { return $"Error: {ex.Message}"; }
-            });
-        }
-        #endregion
+        //         }
+        //         catch (Exception ex) { return $"Error: {ex.Message}"; }
+        //     });
+        // }
+        // #endregion
     }
 }

@@ -19,76 +19,76 @@ namespace ExHyperV.ViewModels
         [ObservableProperty] private List<string> _availableLanguages;
         [ObservableProperty] private string _selectedLanguage;
 
-        [ObservableProperty] private string _updateStatusText;
-        [ObservableProperty] private bool _isCheckingForUpdate;
-        [ObservableProperty] private string _updateActionIcon;
-        [ObservableProperty] private IRelayCommand _updateActionCommand;
-        [ObservableProperty] private bool _isUpdateActionEnabled;
-        private string _latestVersionTag;
+        // [ObservableProperty] private string _updateStatusText;
+        // [ObservableProperty] private bool _isCheckingForUpdate;
+        // [ObservableProperty] private string _updateActionIcon;
+        // [ObservableProperty] private IRelayCommand _updateActionCommand;
+        // [ObservableProperty] private bool _isUpdateActionEnabled;
+        // private string _latestVersionTag;
 
-        [ObservableProperty]
-        private bool _showUpdateIndicator;
+        // [ObservableProperty]
+        // private bool _showUpdateIndicator;
 
 
-        [RelayCommand]
-        private async Task CheckForUpdateAsync()
-        {
-            IsCheckingForUpdate = true;
-            IsUpdateActionEnabled = false;
-            ShowUpdateIndicator = false;
-            UpdateStatusText = ExHyperV.Properties.Resources.Status_CheckingForUpdates;
+        // [RelayCommand]
+        // private async Task CheckForUpdateAsync()
+        // {
+        //     IsCheckingForUpdate = true;
+        //     IsUpdateActionEnabled = false;
+        //     ShowUpdateIndicator = false;
+        //     UpdateStatusText = ExHyperV.Properties.Resources.Status_CheckingForUpdates;
 
-            try
-            {
-                var result = await SettingsService.CheckForUpdateAsync(Utils.Version);
+        //     try
+        //     {
+        //         var result = await SettingsService.CheckForUpdateAsync(Utils.Version);
 
-                if (result.IsUpdateAvailable)
-                {
-                    UpdateStatusText = string.Format(Properties.Resources.Info_NewVersionFound, result.LatestVersion);
-                    UpdateActionIcon = "\uE71B";
-                    UpdateActionCommand = GoToReleasePageCommand;
-                    _latestVersionTag = result.LatestVersion;
-                    ShowUpdateIndicator = true;
-                }
-                else if (result.IsInnerTest) // 直接在这里合并判断
-                {
-                    UpdateStatusText = Properties.Resources.Label_Beta; // 或者从资源文件读
-                    UpdateActionIcon = "\uF196"; // 实验室/烧瓶图标
-                    UpdateActionCommand = CheckForUpdateCommand;
-                }
-                else
-                {
-                    UpdateStatusText = ExHyperV.Properties.Resources.Info_AlreadyLatestVersion;
-                    UpdateActionIcon = "\uE73E";
-                    UpdateActionCommand = CheckForUpdateCommand;
-                }
-            }
-            catch (Exception ex)
-            {
-                UpdateStatusText = ex.Message;
-                UpdateActionIcon = "\uE72C";
-                UpdateActionCommand = CheckForUpdateCommand;
-            }
-            finally
-            {
-                IsCheckingForUpdate = false;
-                IsUpdateActionEnabled = true;
-            }
-        }
-        [RelayCommand]
-        private void GoToReleasePage()
-        {
-            if (string.IsNullOrEmpty(_latestVersionTag)) return;
+        //         if (result.IsUpdateAvailable)
+        //         {
+        //             UpdateStatusText = string.Format(Properties.Resources.Info_NewVersionFound, result.LatestVersion);
+        //             UpdateActionIcon = "\uE71B";
+        //             UpdateActionCommand = GoToReleasePageCommand;
+        //             _latestVersionTag = result.LatestVersion;
+        //             ShowUpdateIndicator = true;
+        //         }
+        //         else if (result.IsInnerTest) // 直接在这里合并判断
+        //         {
+        //             UpdateStatusText = Properties.Resources.Label_Beta; // 或者从资源文件读
+        //             UpdateActionIcon = "\uF196"; // 实验室/烧瓶图标
+        //             UpdateActionCommand = CheckForUpdateCommand;
+        //         }
+        //         else
+        //         {
+        //             UpdateStatusText = ExHyperV.Properties.Resources.Info_AlreadyLatestVersion;
+        //             UpdateActionIcon = "\uE73E";
+        //             UpdateActionCommand = CheckForUpdateCommand;
+        //         }
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         UpdateStatusText = ex.Message;
+        //         UpdateActionIcon = "\uE72C";
+        //         UpdateActionCommand = CheckForUpdateCommand;
+        //     }
+        //     finally
+        //     {
+        //         IsCheckingForUpdate = false;
+        //         IsUpdateActionEnabled = true;
+        //     }
+        // }
+        // [RelayCommand]
+        // private void GoToReleasePage()
+        // {
+        //     if (string.IsNullOrEmpty(_latestVersionTag)) return;
 
-            var url = $"https://github.com/Justsenger/ExHyperV/releases/tag/{_latestVersionTag}";
+        //     var url = $"https://github.com/Justsenger/ExHyperV/releases/tag/{_latestVersionTag}";
 
-            try
-            {
-                Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
-            }
-            catch{}
-        }
-        public string CopyrightInfo => "© 2026 | " + Utils.Author+ " | " + Utils.Version;
+        //     try
+        //     {
+        //         Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+        //     }
+        //     catch{}
+        // }
+        public static string CopyrightInfo => "自签名" + Utils.Author + " | " + Utils.Version;
 
         public SettingsViewModel()
         {
@@ -98,8 +98,8 @@ namespace ExHyperV.ViewModels
             LoadCurrentSettings();
             _isInitializing = false;
 
-            UpdateActionCommand = CheckForUpdateCommand;
-            _ = CheckForUpdateCommand.ExecuteAsync(null);
+            // UpdateActionCommand = CheckForUpdateCommand;
+            // _ = CheckForUpdateCommand.ExecuteAsync(null);
         }
 
         private void LoadCurrentSettings()

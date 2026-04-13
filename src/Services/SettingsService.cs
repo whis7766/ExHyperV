@@ -1,86 +1,86 @@
 using System.Diagnostics;
 using System.IO;
+// using System.Net.Http;
 using System.Windows;
 using System.Xml.Linq;
 using ExHyperV.Properties;
 using Wpf.Ui.Appearance;
-using System.Net.Http;
 
 namespace ExHyperV.Services
 {
 
-    public record UpdateResult(bool IsUpdateAvailable, string LatestVersion);
-    internal class GitHubRelease
-    {
-        public string tag_name { get; set; }
-    }
+    // public record UpdateResult(bool IsUpdateAvailable, string LatestVersion);
+    // internal class GitHubRelease
+    // {
+    //     public string tag_name { get; set; }
+    // }
     public static class SettingsService
     {
 
-        private static readonly HttpClient _httpClient = new HttpClient();
-        public record UpdateResult(bool IsUpdateAvailable, string LatestVersion, bool IsInnerTest = false);
-        private const string GitHubApiUrl = "https://api.github.com/repos/Justsenger/ExHyperV/releases/latest";
-        private const string FallbackUrl = "https://update.shalingye.workers.dev/";
+        // private static readonly HttpClient _httpClient = new HttpClient();
+        // public record UpdateResult(bool IsUpdateAvailable, string LatestVersion, bool IsInnerTest = false);
+        // private const string GitHubApiUrl = "https://api.github.com/repos/Justsenger/ExHyperV/releases/latest";
+        // private const string FallbackUrl = "https://update.shalingye.workers.dev/";
 
-        static SettingsService()
-        {
-            _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("ExHyperV-App-Check");
-        }
+        // static SettingsService()
+        // {
+        //     _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("ExHyperV-App-Check");
+        // }
 
-        public static async Task<UpdateResult> CheckForUpdateAsync(string currentVersion)
-        {
-            string latestVersionTag = null;
-            try
-            {
-                var response = await _httpClient.GetAsync(GitHubApiUrl);
-                if (response.IsSuccessStatusCode)
-                {
-                    var jsonStream = await response.Content.ReadAsStreamAsync();
-                    var release = await System.Text.Json.JsonSerializer.DeserializeAsync<GitHubRelease>(jsonStream);
-                    latestVersionTag = release?.tag_name;
-                }
-                else
-                {
-                    string errorContent = await response.Content.ReadAsStringAsync();
-                }
-            }
-            catch (Exception)
-            {
-            }
+        // public static async Task<UpdateResult> CheckForUpdateAsync(string currentVersion)
+        // {
+        //     string latestVersionTag = null;
+        //     try
+        //     {
+        //         var response = await _httpClient.GetAsync(GitHubApiUrl);
+        //         if (response.IsSuccessStatusCode)
+        //         {
+        //             var jsonStream = await response.Content.ReadAsStreamAsync();
+        //             var release = await System.Text.Json.JsonSerializer.DeserializeAsync<GitHubRelease>(jsonStream);
+        //             latestVersionTag = release?.tag_name;
+        //         }
+        //         else
+        //         {
+        //             string errorContent = await response.Content.ReadAsStringAsync();
+        //         }
+        //     }
+        //     catch (Exception)
+        //     {
+        //     }
 
-            if (string.IsNullOrEmpty(latestVersionTag))
-            {
-                try
-                {
-                    latestVersionTag = (await _httpClient.GetStringAsync(FallbackUrl))?.Trim();
-                }
-                catch (Exception)
-                {
-                    throw new Exception(ExHyperV.Properties.Resources.Error_CheckForUpdateFailed);
-                }
-            }
+        //     if (string.IsNullOrEmpty(latestVersionTag))
+        //     {
+        //         try
+        //         {
+        //             latestVersionTag = (await _httpClient.GetStringAsync(FallbackUrl))?.Trim();
+        //         }
+        //         catch (Exception)
+        //         {
+        //             throw new Exception(ExHyperV.Properties.Resources.Error_CheckForUpdateFailed);
+        //         }
+        //     }
 
-            if (string.IsNullOrEmpty(latestVersionTag))
-            {
-                return new UpdateResult(false, currentVersion);
-            }
+        //     if (string.IsNullOrEmpty(latestVersionTag))
+        //     {
+        //         return new UpdateResult(false, currentVersion);
+        //     }
 
-            var cleanCurrentStr = currentVersion.TrimStart('V', 'v').Split('-')[0];
-            var cleanLatestStr = latestVersionTag.TrimStart('V', 'v').Split('-')[0];
+        //     var cleanCurrentStr = currentVersion.TrimStart('V', 'v').Split('-')[0];
+        //     var cleanLatestStr = latestVersionTag.TrimStart('V', 'v').Split('-')[0];
 
-            if (Version.TryParse(cleanCurrentStr, out var currentVer) && Version.TryParse(cleanLatestStr, out var latestVer))
-            {
-                // 这里是核心合并逻辑：
-                bool isUpdateAvailable = latestVer > currentVer;  // 服务器大 -> 有更新
-                bool isInnerTest = currentVer > latestVer;        // 本地大 -> 内测版
+        //     if (Version.TryParse(cleanCurrentStr, out var currentVer) && Version.TryParse(cleanLatestStr, out var latestVer))
+        //     {
+        //         // 这里是核心合并逻辑：
+        //         bool isUpdateAvailable = latestVer > currentVer;  // 服务器大 -> 有更新
+        //         bool isInnerTest = currentVer > latestVer;        // 本地大 -> 内测版
 
-                return new UpdateResult(isUpdateAvailable, latestVersionTag, isInnerTest);
-            }
+        //         return new UpdateResult(isUpdateAvailable, latestVersionTag, isInnerTest);
+        //     }
 
-            // 字符串退化处理逻辑
-            bool isSame = string.Equals(latestVersionTag, currentVersion, StringComparison.OrdinalIgnoreCase);
-            return new UpdateResult(!isSame, latestVersionTag, false);
-        }
+        //     // 字符串退化处理逻辑
+        //     bool isSame = string.Equals(latestVersionTag, currentVersion, StringComparison.OrdinalIgnoreCase);
+        //     return new UpdateResult(!isSame, latestVersionTag, false);
+        // }
         private const string ConfigFilePath = "config.xml";
 
         // 从XML加载语言设置
