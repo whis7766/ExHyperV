@@ -156,7 +156,7 @@
                 </Grid>
             </ui:CardAction>
 
-            <ui:CardAction Margin="0,5,5,5" Padding="15,20" Command="{Binding NavigateCommand}" CommandParameter="USB">
+            <!-- <ui:CardAction Margin="0,5,5,5" Padding="15,20" Command="{Binding NavigateCommand}" CommandParameter="USB">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -168,7 +168,7 @@
                         <TextBlock Text="{x:Static properties:Resources.MainPage_2}" FontSize="13" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Grid>
-            </ui:CardAction>
+            </ui:CardAction> -->
 
 
         </UniformGrid>
