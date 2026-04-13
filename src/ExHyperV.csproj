@@ -26,14 +26,14 @@
     <!--                       2. NuGet 包引用                               -->
     <!-- =================================================================== -->
     <ItemGroup>
-        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
         <PackageReference Include="DiscUtils.Core" Version="0.16.13" />
         <PackageReference Include="DiscUtils.Iso9660" Version="0.16.13" />
         <PackageReference Include="DiscUtils.Streams" Version="0.16.13" />
-        <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.4.0" />
+        <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.6.0" />
         <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
-        <PackageReference Include="RoyalApps.Community.Rdp.WinForms" Version="1.4.0" />
-        <PackageReference Include="SSH.NET" Version="2025.1.0" />
+        <!-- <PackageReference Include="RoyalApps.Community.Rdp.WinForms" Version="1.4.0" /> -->
+        <!-- <PackageReference Include="SSH.NET" Version="2025.1.0" /> -->
         <PackageReference Include="WPF-UI" Version="4.0.3" />
     </ItemGroup>
 
@@ -45,11 +45,11 @@
         <!-- 将 Assets 文件夹下的所有文件作为嵌入资源 -->
         <Resource Include="Assets\**\*.*" />
     </ItemGroup>
-    <ItemGroup>
+    <!-- <ItemGroup>
         <None Remove="UserScripts\configure_system.sh" />
         <None Remove="UserScripts\Ubuntu-22.04-Micro-ATP.sh" />
         <None Remove="UserScripts\Ubuntu-22.04-Official.sh" />
-    </ItemGroup>
+    </ItemGroup> -->
 
     <!-- =================================================================== -->
     <!--                       4. 自动生成文件配置                            -->
@@ -61,9 +61,9 @@
         <Compile Update="Models\BootOrderItem.cs">
             <Generator>MSBuild:Compile</Generator>
         </Compile>
-        <Compile Update="Models\SshCredentials.cs">
+        <!-- <Compile Update="Models\SshCredentials.cs">
             <Generator>MSBuild:Compile</Generator>
-        </Compile>
+        </Compile> -->
         <Compile Update="Properties\Resources.Designer.cs">
             <DesignTime>True</DesignTime>
             <AutoGen>True</AutoGen>
@@ -74,9 +74,9 @@
             <LastGenOutput>Resources.Designer.cs</LastGenOutput>
         </EmbeddedResource>
     </ItemGroup>
-    <ItemGroup>
+    <!-- <ItemGroup>
         <Folder Include="UserScripts\" />
-    </ItemGroup>
+    </ItemGroup> -->
 
     <!-- ========================================================================================= -->
     <!-- ===                        ExHyperV 终极发布后清理脚本，用于修剪应用程序体积          === -->
@@ -165,7 +165,7 @@
             <MediumRiskToRemove Include="$(PublishDir)Microsoft.Win32.SystemEvents.dll" />
             <MediumRiskToRemove Include="$(PublishDir)runtimes\**\Microsoft.Win32.SystemEvents.dll" />
             <!-- 中等风险: 移除旧的 WMI 支持库。需要严格测试 -->
-            <!-- <MediumRiskToRemove Include="$(PublishDir)System.Management.dll" /> -->
+            <MediumRiskToRemove Include="$(PublishDir)System.Management.dll" />
         </ItemGroup>
         <Delete Files="@(MediumRiskToRemove)" />
         <Message Text="--- [等级4] 移除部分服务、系统部件" Importance="high" />
