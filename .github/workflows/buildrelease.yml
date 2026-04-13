@@ -1,0 +1,45 @@
+name: Build Release
+
+on:
+  workflow_dispatch:
+
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: "8.0.x"
+    - name: Build for AMD64
+      working-directory: ./src
+      run: |
+        dotnet publish ExHyperV.csproj -c Release --no-self-contained -o ./publish_x64_production
+    - working-directory: ./src
+      run: |
+        Compress-Archive -Path ./publish_x64_production/* -DestinationPath "../ExHyperV_x64.zip" -Force
+      shell: pwsh
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: "unsigned"
+        files: "./ExHyperV_x64.zip"
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - uses: Mattraks/delete-workflow-runs@v2.1.0
+      if: always()
+      with:
+        token: ${{ github.token }}
+        repository: ${{ github.repository }}
+        retain_days: 0
+        keep_minimum_runs: 0
