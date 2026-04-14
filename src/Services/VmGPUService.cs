@@ -544,7 +544,7 @@ namespace ExHyperV.Services
             });
         }
 
-        public Task<string> AddGpuPartitionAsync(string vmName, string gpuInstancePath, string gpuManu, PartitionInfo selectedPartition, string id, SshCredentials credentials = null, Action<string> progressCallback = null, CancellationToken cancellationToken = default)
+        public Task<string> AddGpuPartitionAsync(string vmName, string gpuInstancePath, string gpuManu, PartitionInfo selectedPartition, string id, Action<string> progressCallback = null, CancellationToken cancellationToken = default)
         {
             return Task.Run(async () =>
             {

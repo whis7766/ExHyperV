@@ -88,11 +88,11 @@
             Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"
             Text="{x:Static properties:Resources.about}" />
 
-        <ui:CardExpander ContentPadding="0" IsExpanded="True">
-            <ui:CardExpander.Icon>
+        <ui:CardControl>
+            <ui:CardControl.Icon>
                 <ui:FontIcon FontFamily="{DynamicResource SegoeFluentIcons}" Glyph="&#xE81E;" />
-            </ui:CardExpander.Icon>
-            <ui:CardExpander.Header>
+            </ui:CardControl.Icon>
+            <ui:CardControl.Header>
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -107,7 +107,7 @@
                         Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
                         Text="{Binding CopyrightInfo}" />
                 </Grid>
-            </ui:CardExpander.Header>
-        </ui:CardExpander>
+            </ui:CardControl.Header>
+        </ui:CardControl>
     </StackPanel>
 </Page>

@@ -19,6 +19,7 @@
         <DebugSymbols>false</DebugSymbols>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+        <Optimize>true</Optimize>
     </PropertyGroup>
 
     <!-- =================================================================== -->
