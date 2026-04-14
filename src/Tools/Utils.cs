@@ -1,15 +1,15 @@
 using System.Collections.ObjectModel;
+using System.Management;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Media;
 using Wpf.Ui.Controls;
-using System.Text.RegularExpressions;
-using System.Management;
 
 namespace ExHyperV.Tools;
 
@@ -318,7 +318,7 @@ public class Utils
             if (-not (Test-Path '{path}')) {{ New-Item -Path '{path}' -Force }}
             Set-ItemProperty -Path '{path}' -Name 'RequireSecureDeviceAssignment' -Value 0 -Type DWord
             Set-ItemProperty -Path '{path}' -Name 'RequireSupportedDeviceAssignment' -Value 0 -Type DWord";
-        Run(script); 
+        Run(script);
     }
 
     /// <summary>
@@ -332,7 +332,7 @@ public class Utils
                 Remove-ItemProperty -Path '{path}' -Name 'RequireSecureDeviceAssignment' -ErrorAction SilentlyContinue
                 Remove-ItemProperty -Path '{path}' -Name 'RequireSupportedDeviceAssignment' -ErrorAction SilentlyContinue
             }}";
-        Run(script); 
+        Run(script);
     }
 
     /// <summary>

@@ -24,6 +24,6 @@ namespace ExHyperV.Views.Components
                 textBox.ScrollToEnd();
             }
         }
-    
+
     }
 }

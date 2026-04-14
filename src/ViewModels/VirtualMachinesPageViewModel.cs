@@ -955,38 +955,38 @@ namespace ExHyperV.ViewModels
 
 
         // 修改原本启动外部 vmconnect.exe 的逻辑
-        [RelayCommand]
-        private void OpenNativeConnect()
-        {
-            if (SelectedVm == null) return;
+        // [RelayCommand]
+        // private void OpenNativeConnect()
+        // {
+        //     if (SelectedVm == null) return;
 
-            try
-            {
-                // 1. 实例化我们自己的沉浸式控制台窗口
-                // 传入当前选中虚拟机的 GUID (Id.ToString()) 和 名称
-                var consoleWin = new ExHyperV.Views.ConsoleWindow(
-                    SelectedVm.Id.ToString(),
-                    SelectedVm.Name
-                );
+        //     try
+        //     {
+        //         // 1. 实例化我们自己的沉浸式控制台窗口
+        //         // 传入当前选中虚拟机的 GUID (Id.ToString()) 和 名称
+        //         var consoleWin = new ExHyperV.Views.ConsoleWindow(
+        //             SelectedVm.Id.ToString(),
+        //             SelectedVm.Name
+        //         );
 
-                // 2. 设置所有者为当前主窗口（这样主窗口关闭时，控制台也会跟着关，且弹出位置更准确）
-                //consoleWin.Owner = Application.Current.MainWindow;
+        //         // 2. 设置所有者为当前主窗口（这样主窗口关闭时，控制台也会跟着关，且弹出位置更准确）
+        //         //consoleWin.Owner = Application.Current.MainWindow;
 
-                // 3. 显示窗口
-                consoleWin.Show();
+        //         // 3. 显示窗口
+        //         consoleWin.Show();
 
-                // 4. (可选) 给个小反馈
-                Debug.WriteLine(string.Format(Properties.Resources.VirtualMachinesPageViewModel_3, SelectedVm.Name));
-            }
-            catch (Exception ex)
-            {
-                ShowSnackbar(
-                    Properties.Resources.Error_Vm_StartFail,
-                    string.Format(Properties.Resources.VirtualMachinesPageViewModel_4, ex.Message),
-                    ControlAppearance.Danger,
-                    SymbolRegular.ErrorCircle24);
-            }
-        }
+        //         // 4. (可选) 给个小反馈
+        //         Debug.WriteLine(string.Format(Properties.Resources.VirtualMachinesPageViewModel_3, SelectedVm.Name));
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         ShowSnackbar(
+        //             Properties.Resources.Error_Vm_StartFail,
+        //             string.Format(Properties.Resources.VirtualMachinesPageViewModel_4, ex.Message),
+        //             ControlAppearance.Danger,
+        //             SymbolRegular.ErrorCircle24);
+        //     }
+        // }
 
         // 修改操作系统标签
         [RelayCommand]

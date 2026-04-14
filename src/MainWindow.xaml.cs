@@ -27,7 +27,7 @@ namespace ExHyperV
             RootNavigation.Navigate(typeof(HostPage));
             RootNavigation.Navigate(typeof(SwitchPage));
             RootNavigation.Navigate(typeof(VirtualMachinesPage));
-            RootNavigation.Navigate(typeof(USBPage));
+            // RootNavigation.Navigate(typeof(USBPage));
             RootNavigation.Navigate(typeof(MainPage));
 
         }
