@@ -17,7 +17,6 @@
         <SatelliteResourceLanguages>en;zh-Hans</SatelliteResourceLanguages>
         <DebugType>none</DebugType>
         <DebugSymbols>false</DebugSymbols>
-        <Optimize>true</Optimize>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     </PropertyGroup>
