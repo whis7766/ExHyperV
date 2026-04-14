@@ -108,62 +108,6 @@
                         Text="{Binding CopyrightInfo}" />
                 </Grid>
             </ui:CardExpander.Header>
-            <StackPanel>
-                <ui:Anchor
-                    Padding="16,12"
-                    HorizontalAlignment="Stretch"
-                    HorizontalContentAlignment="Stretch"
-                    Background="Transparent"
-                    BorderThickness="0,1,0,0"
-                    Command="{Binding UpdateActionCommand}"
-                    CornerRadius="0"
-                    IsEnabled="{Binding IsUpdateActionEnabled}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel
-                            Grid.Column="0"
-                            VerticalAlignment="Center"
-                            Orientation="Horizontal">
-                            <Ellipse
-                                Width="8"
-                                Height="8"
-                                Margin="0,0,8,0"
-                                Visibility="{Binding ShowUpdateIndicator, Converter={StaticResource BoolToVis}}">
-                                <Ellipse.Fill>
-                                    <RadialGradientBrush>
-                                        <GradientStop Offset="0.0" Color="#FFFF4C4C" />
-                                        <GradientStop Offset="1.0" Color="#FFD62828" />
-                                    </RadialGradientBrush>
-                                </Ellipse.Fill>
-                            </Ellipse>
-                            <TextBlock VerticalAlignment="Center" Text="{Binding UpdateStatusText, FallbackValue=ExHyperV.Properties.Resources.Status_CheckingForUpdates}" />
-
-                        </StackPanel>
-                        <Grid Grid.Column="1">
-                            <ui:ProgressRing
-                                Width="16"
-                                Height="16"
-                                IsIndeterminate="True"
-                                Visibility="{Binding IsCheckingForUpdate, Converter={StaticResource BoolToVis}}" />
-                            <ui:FontIcon FontFamily="{DynamicResource SegoeFluentIcons}" Glyph="{Binding UpdateActionIcon}">
-                                <ui:FontIcon.Style>
-                                    <Style TargetType="ui:FontIcon">
-                                        <Setter Property="Visibility" Value="Visible" />
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsCheckingForUpdate}" Value="True">
-                                                <Setter Property="Visibility" Value="Collapsed" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </ui:FontIcon.Style>
-                            </ui:FontIcon>
-                        </Grid>
-                    </Grid>
-                </ui:Anchor>
-            </StackPanel>
         </ui:CardExpander>
     </StackPanel>
 </Page>
