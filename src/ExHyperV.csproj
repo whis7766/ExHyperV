@@ -11,7 +11,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <ApplicationIcon>applicationIcon.ico</ApplicationIcon>
-        <Version>1.4.2.1</Version>
+        <Version>0.t</Version>
         <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
         <WpfUiGenerateDiagnosticMessages>False</WpfUiGenerateDiagnosticMessages>
         <SatelliteResourceLanguages>en;zh-Hans</SatelliteResourceLanguages>
@@ -27,6 +27,7 @@
     <!-- =================================================================== -->
     <ItemGroup>
         <PackageReference Include="BouncyCastle.Cryptography" Version="2.6.2" />
+        <PackageReference Include="System.Management.Automation" Version="7.6.0" />
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
         <PackageReference Include="System.Management" Version="10.0.5" />
         <PackageReference Include="DiscUtils.Core" Version="0.16.13" />
@@ -34,8 +35,6 @@
         <PackageReference Include="DiscUtils.Streams" Version="0.16.13" />
         <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.6.0" />
         <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.142" />
-        <!-- <PackageReference Include="RoyalApps.Community.Rdp.WinForms" Version="1.4.0" /> -->
-        <!-- <PackageReference Include="SSH.NET" Version="2025.1.0" /> -->
         <PackageReference Include="WPF-UI" Version="4.2.0" />
     </ItemGroup>
 
