@@ -92,13 +92,14 @@
         <Delete Files="@(SafeToRemove)" />
         <Message Text="--- [等级1] 移除： Roslyn, ref folder, and PDB files." Importance="high" />
 
-        <!-- 清理多余的 runtimes 文件夹，仅保留 win-x64 -->
+        <!-- 清理多余的 runtimes 文件夹，仅保留 win 和 win-x64 -->
         <ItemGroup>
             <AllRuntimeDirs
                 Include="$([System.IO.Directory]::GetDirectories('$(PublishDir)runtimes'))" />
             <RuntimeDirsToDelete Include="@(AllRuntimeDirs)"
-                Condition=" '%(Filename)' != 'win-x64' " />
+                Condition=" '%(Filename)' != 'win' AND '%(Filename)' != 'win-x64' " />
         </ItemGroup>
+
         <RemoveDir Directories="@(RuntimeDirsToDelete)" />
 
         <RemoveDir Directories="$(PublishDir)zh-Hans" />
