@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using System.Management; // 需要 NuGet: System.Management
+using System.Management;
 using System.Threading.Tasks;
 using Microsoft.Win32;
 

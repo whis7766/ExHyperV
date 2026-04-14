@@ -285,7 +285,7 @@ namespace ExHyperV.Services
 
         public Task<string> GetVmStateAsync(string vmName)
         {
-            return Task.Run<string>(() =>
+            return Task.Run(() =>
             {
                 var result = Utils.Run($"(Get-VM -Name '{vmName}').State");
                 if (result != null && result.Count > 0)

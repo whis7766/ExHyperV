@@ -28,7 +28,7 @@ namespace ExHyperV.ViewModels
         [ObservableProperty] private bool _isGpuStrategyEnabled;
         [ObservableProperty] private bool _isGpuStrategyToggleEnabled = false;
         [ObservableProperty] private bool _isServerSystem;
-        [ObservableProperty] private bool _isSystemSwitchEnabled = false;
+        // [ObservableProperty] private bool _isSystemSwitchEnabled = false;
         [ObservableProperty] private string _systemVersionDesc;
         [ObservableProperty] private bool _isNumaSpanningEnabled;
         [ObservableProperty] private HyperVSchedulerType _currentSchedulerType;
@@ -40,7 +40,7 @@ namespace ExHyperV.ViewModels
             new SchedulerMode(ExHyperV.Properties.Resources.Scheduler_Root, HyperVSchedulerType.Root)
         };
 
-        // public HostPageViewModel() => _ = LoadInitialStatusAsync();
+        public HostPageViewModel() => _ = LoadInitialStatusAsync();
 
         private async Task LoadInitialStatusAsync()
         {
@@ -109,7 +109,6 @@ namespace ExHyperV.ViewModels
             InitializeProductType();
             await LoadAdvancedConfigAsync();
             IsGpuStrategyToggleEnabled = true;
-            IsSystemSwitchEnabled = false;
             // IsSystemSwitchEnabled = true;
 
             //string currentId = Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion", "EditionID", "")?.ToString() ?? "";

@@ -2,9 +2,9 @@
     x:Class="ExHyperV.Views.Pages.HostPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     xmlns:converters="clr-namespace:ExHyperV.Converters"
     xmlns:properties="clr-namespace:ExHyperV.Properties"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Title="HostPage">
 
     <Page.Resources>
@@ -15,236 +15,298 @@
     <Grid Margin="24">
         <StackPanel>
             <StackPanel Margin="0,0,0,12">
-                <ui:TextBlock Text="{x:Static properties:Resources.Menu_Env}" FontSize="28" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}" />
+                <ui:TextBlock
+                    FontSize="28"
+                    Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"
+                    Text="{x:Static properties:Resources.Menu_Env}" />
             </StackPanel>
 
-            <!-- 第一部分：运行环境 -->
+            <!--  第一部分：运行环境  -->
             <StackPanel Margin="0,0,0,16">
-                <ui:TextBlock Text="{x:Static properties:Resources.Menu_Runtime}" 
-                              Margin="0,0,0,8"
-                              Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                <ui:TextBlock
+                    Margin="0,0,0,8"
+                    Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"
+                    Text="{x:Static properties:Resources.Menu_Runtime}" />
 
-                <!-- 1. CPU 虚拟化 -->
-                <!-- 修改：Padding 设为 16，增加高度 -->
-                <ui:Card Padding="16" Margin="0,0,0,4">
+                <!--  1. CPU 虚拟化  -->
+                <!--  修改：Padding 设为 16，增加高度  -->
+                <ui:Card Margin="0,0,0,4" Padding="16">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <!-- 第一列：现在放状态图标 -->
-                            <ColumnDefinition Width="Auto"/>
-                            <!-- 第二列：文字 -->
-                            <ColumnDefinition Width="*"/>
+                            <!--  第一列：现在放状态图标  -->
+                            <ColumnDefinition Width="Auto" />
+                            <!--  第二列：文字  -->
+                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <!-- 状态图标 (原右侧移到左侧) -->
-                        <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="0,0,12,0">
-                            <ui:ProgressRing Width="16" Height="16" IsIndeterminate="True" 
-                                             Visibility="{Binding CpuStatus.IsChecking, Converter={StaticResource BoolToVis}}"/>
-                            <ui:FontIcon FontSize="20" FontFamily="{DynamicResource SegoeFluentIcons}" 
-                                         Glyph="{Binding CpuStatus.IconGlyph}" 
-                                         Foreground="{Binding CpuStatus.IconColor}" 
-                                         Visibility="{Binding CpuStatus.IsChecking, Converter={StaticResource BoolToVis}, ConverterParameter=Invert}"/>
+                        <!--  状态图标 (原右侧移到左侧)  -->
+                        <StackPanel
+                            Grid.Column="0"
+                            Margin="0,0,12,0"
+                            Orientation="Horizontal">
+                            <ui:ProgressRing
+                                Width="16"
+                                Height="16"
+                                IsIndeterminate="True"
+                                Visibility="{Binding CpuStatus.IsChecking, Converter={StaticResource BoolToVis}}" />
+                            <ui:FontIcon
+                                FontFamily="{DynamicResource SegoeFluentIcons}"
+                                FontSize="20"
+                                Foreground="{Binding CpuStatus.IconColor}"
+                                Glyph="{Binding CpuStatus.IconGlyph}"
+                                Visibility="{Binding CpuStatus.IsChecking, Converter={StaticResource BoolToVis}, ConverterParameter=Invert}" />
                         </StackPanel>
 
-                        <!-- 文字 -->
-                        <TextBlock Grid.Column="1" Text="{x:Static properties:Resources.Menu_CpuVirt}" VerticalAlignment="Center" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                        <!--  文字  -->
+                        <TextBlock
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"
+                            Text="{x:Static properties:Resources.Menu_CpuVirt}" />
                     </Grid>
                 </ui:Card>
 
-                <!-- 2. IOMMU -->
-                <ui:Card Padding="16" Margin="0,0,0,4">
+                <!--  2. IOMMU  -->
+                <ui:Card Margin="0,0,0,4" Padding="16">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <!-- 状态图标 -->
-                        <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="0,0,12,0">
-                            <ui:ProgressRing Width="16" Height="16" IsIndeterminate="True" 
-                                             Visibility="{Binding IommuStatus.IsChecking, Converter={StaticResource BoolToVis}}"/>
-                            <ui:FontIcon FontSize="20" FontFamily="{DynamicResource SegoeFluentIcons}" 
-                                         Glyph="{Binding IommuStatus.IconGlyph}" 
-                                         Foreground="{Binding IommuStatus.IconColor}" 
-                                         Visibility="{Binding IommuStatus.IsChecking, Converter={StaticResource BoolToVis}, ConverterParameter=Invert}"/>
+                        <!--  状态图标  -->
+                        <StackPanel
+                            Grid.Column="0"
+                            Margin="0,0,12,0"
+                            Orientation="Horizontal">
+                            <ui:ProgressRing
+                                Width="16"
+                                Height="16"
+                                IsIndeterminate="True"
+                                Visibility="{Binding IommuStatus.IsChecking, Converter={StaticResource BoolToVis}}" />
+                            <ui:FontIcon
+                                FontFamily="{DynamicResource SegoeFluentIcons}"
+                                FontSize="20"
+                                Foreground="{Binding IommuStatus.IconColor}"
+                                Glyph="{Binding IommuStatus.IconGlyph}"
+                                Visibility="{Binding IommuStatus.IsChecking, Converter={StaticResource BoolToVis}, ConverterParameter=Invert}" />
                         </StackPanel>
 
-                        <!-- 文字 -->
-                        <TextBlock Grid.Column="1" Text="{x:Static properties:Resources.Menu_Iommu}" VerticalAlignment="Center" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                        <!--  文字  -->
+                        <TextBlock
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"
+                            Text="{x:Static properties:Resources.Menu_Iommu}" />
                     </Grid>
                 </ui:Card>
 
-                <!-- 3. Hyper-V 服务 -->
-                <ui:Card Padding="16" Margin="0,0,0,4">
+                <!--  3. Hyper-V 服务  -->
+                <ui:Card Margin="0,0,0,4" Padding="16">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
-                        <!-- 状态图标 -->
-                        <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="0,0,12,0">
-                            <ui:ProgressRing Width="16" Height="16" IsIndeterminate="True" 
-                                             Visibility="{Binding HyperVStatus.IsChecking, Converter={StaticResource BoolToVis}}"/>
-                            <ui:FontIcon FontSize="20" FontFamily="{DynamicResource SegoeFluentIcons}" 
-                                         Glyph="{Binding HyperVStatus.IconGlyph}" 
-                                         Foreground="{Binding HyperVStatus.IconColor}" 
-                                         Visibility="{Binding HyperVStatus.IsChecking, Converter={StaticResource BoolToVis}, ConverterParameter=Invert}"/>
+                        <!--  状态图标  -->
+                        <StackPanel
+                            Grid.Column="0"
+                            Margin="0,0,12,0"
+                            Orientation="Horizontal">
+                            <ui:ProgressRing
+                                Width="16"
+                                Height="16"
+                                IsIndeterminate="True"
+                                Visibility="{Binding HyperVStatus.IsChecking, Converter={StaticResource BoolToVis}}" />
+                            <ui:FontIcon
+                                FontFamily="{DynamicResource SegoeFluentIcons}"
+                                FontSize="20"
+                                Foreground="{Binding HyperVStatus.IconColor}"
+                                Glyph="{Binding HyperVStatus.IconGlyph}"
+                                Visibility="{Binding HyperVStatus.IsChecking, Converter={StaticResource BoolToVis}, ConverterParameter=Invert}" />
                         </StackPanel>
 
-                        <!-- 文字 -->
+                        <!--  文字  -->
                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                            <TextBlock Text="{x:Static properties:Resources.Menu_HyperVService}" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
-                            <TextBlock 
-    Text="{Binding HyperVStatus.StatusText}" 
-    Visibility="{Binding HyperVStatus.StatusText, Converter={StaticResource StringToVisibilityConverter}}" 
-    FontSize="12" 
-    Margin="0,2,0,0" 
-    TextWrapping="Wrap" 
-    Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" />
+                            <TextBlock Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}" Text="{x:Static properties:Resources.Menu_HyperVService}" />
+                            <TextBlock
+                                Margin="0,2,0,0"
+                                FontSize="12"
+                                Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
+                                Text="{Binding HyperVStatus.StatusText}"
+                                TextWrapping="Wrap"
+                                Visibility="{Binding HyperVStatus.StatusText, Converter={StaticResource StringToVisibilityConverter}}" />
                         </StackPanel>
 
-                        <!-- 按钮容器 -->
+                        <!--  按钮容器  -->
                         <StackPanel Grid.Column="2" Orientation="Horizontal">
-                            <!-- 启用/修复按钮：只要状态不是 Success (绿勾)，就显示 -->
-                            <ui:Button 
-        Content="{x:Static properties:Resources.Button_Enable}" 
-        Appearance="Primary"
-        Visibility="{Binding HyperVStatus.IsSuccess, Converter={StaticResource BoolToVis}, ConverterParameter=Invert}"
-        Command="{Binding EnableHyperVCommand}"/>
+                            <!--  启用/修复按钮：只要状态不是 Success (绿勾)，就显示  -->
+                            <ui:Button
+                                Appearance="Primary"
+                                Command="{Binding EnableHyperVCommand}"
+                                Content="{x:Static properties:Resources.Button_Enable}"
+                                Visibility="{Binding HyperVStatus.IsSuccess, Converter={StaticResource BoolToVis}, ConverterParameter=Invert}" />
 
-                            <!-- 禁用按钮：只有当状态完全正常 (Success) 时，才显示 -->
-                            <ui:Button 
-        Content="{x:Static properties:Resources.HostPage_1}" 
-        Appearance="Secondary"
-        Visibility="{Binding HyperVStatus.IsSuccess, Converter={StaticResource BoolToVis}}"
-        Command="{Binding DisableHyperVCommand}"/>
+                            <!--  禁用按钮：只有当状态完全正常 (Success) 时，才显示  -->
+                            <ui:Button
+                                Appearance="Secondary"
+                                Command="{Binding DisableHyperVCommand}"
+                                Content="{x:Static properties:Resources.HostPage_1}"
+                                Visibility="{Binding HyperVStatus.IsSuccess, Converter={StaticResource BoolToVis}}" />
                         </StackPanel>
                     </Grid>
                 </ui:Card>
 
-                <!-- 4. 系统版本 -->
-                <ui:Card Padding="16" Margin="0,0,0,4">
+                <!--  4. 系统版本  -->
+                <ui:Card Margin="0,0,0,4" Padding="16">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <!-- 状态图标 -->
-                        <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="0,0,12,0">
-                            <ui:ProgressRing Width="16" Height="16" IsIndeterminate="True" 
-                                             Visibility="{Binding VersionStatus.IsChecking, Converter={StaticResource BoolToVis}}"/>
-                            <ui:FontIcon FontSize="20" FontFamily="{DynamicResource SegoeFluentIcons}" 
-                                         Glyph="{Binding VersionStatus.IconGlyph}" 
-                                         Foreground="{Binding VersionStatus.IconColor}" 
-                                         Visibility="{Binding VersionStatus.IsChecking, Converter={StaticResource BoolToVis}, ConverterParameter=Invert}"/>
+                        <!--  状态图标  -->
+                        <StackPanel
+                            Grid.Column="0"
+                            Margin="0,0,12,0"
+                            Orientation="Horizontal">
+                            <ui:ProgressRing
+                                Width="16"
+                                Height="16"
+                                IsIndeterminate="True"
+                                Visibility="{Binding VersionStatus.IsChecking, Converter={StaticResource BoolToVis}}" />
+                            <ui:FontIcon
+                                FontFamily="{DynamicResource SegoeFluentIcons}"
+                                FontSize="20"
+                                Foreground="{Binding VersionStatus.IconColor}"
+                                Glyph="{Binding VersionStatus.IconGlyph}"
+                                Visibility="{Binding VersionStatus.IsChecking, Converter={StaticResource BoolToVis}, ConverterParameter=Invert}" />
                         </StackPanel>
 
-                        <!-- 文字 -->
+                        <!--  文字  -->
                         <TextBlock Grid.Column="1" VerticalAlignment="Center">
-                            <Run Text="{x:Static properties:Resources.Label_SysVer}" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
-                            <Run Text="{Binding VersionStatus.StatusText}" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                            <Run Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}" Text="{x:Static properties:Resources.Label_SysVer}" />
+                            <Run Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}" Text="{Binding VersionStatus.StatusText}" />
                         </TextBlock>
                     </Grid>
                 </ui:Card>
 
-                <!-- 5. Windows Server 环境 -->
-                <ui:Card Padding="16" Margin="0,0,0,4">
+                <!--  5. Windows Server 环境  -->
+                <ui:Card Margin="0,0,0,4" Padding="16">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <!-- 状态图标 -->
-                        <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="0,0,12,0">
-                            <ui:ProgressRing Width="16" Height="16" IsIndeterminate="True" 
-                                             Visibility="{Binding SystemStatus.IsChecking, Converter={StaticResource BoolToVis}}"/>
-                            <ui:FontIcon FontSize="20" FontFamily="{DynamicResource SegoeFluentIcons}" 
-                                         Glyph="{Binding SystemStatus.IconGlyph}" 
-                                         Foreground="{Binding SystemStatus.IconColor}" 
-                                         Visibility="{Binding SystemStatus.IsChecking, Converter={StaticResource BoolToVis}, ConverterParameter=Invert}"/>
+                        <!--  状态图标  -->
+                        <StackPanel
+                            Grid.Column="0"
+                            Margin="0,0,12,0"
+                            Orientation="Horizontal">
+                            <ui:ProgressRing
+                                Width="16"
+                                Height="16"
+                                IsIndeterminate="True"
+                                Visibility="{Binding SystemStatus.IsChecking, Converter={StaticResource BoolToVis}}" />
+                            <ui:FontIcon
+                                FontFamily="{DynamicResource SegoeFluentIcons}"
+                                FontSize="20"
+                                Foreground="{Binding SystemStatus.IconColor}"
+                                Glyph="{Binding SystemStatus.IconGlyph}"
+                                Visibility="{Binding SystemStatus.IsChecking, Converter={StaticResource BoolToVis}, ConverterParameter=Invert}" />
                         </StackPanel>
 
-                        <!-- 文字 -->
-                        <TextBlock Grid.Column="1" Text="{x:Static properties:Resources.Label_ServerSys}" VerticalAlignment="Center" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                        <!--  文字  -->
+                        <TextBlock
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"
+                            Text="{x:Static properties:Resources.Label_ServerSys}" />
                     </Grid>
                 </ui:Card>
             </StackPanel>
 
-            <!-- 第二部分：高级设定 (保持原样，仅做参考) -->
+            <!--  第二部分：高级设定 (保持原样，仅做参考)  -->
             <StackPanel>
-                <ui:TextBlock Text="{x:Static properties:Resources.Menu_Advanced}" 
-                              Margin="0,0,0,8"
-                              Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                <ui:TextBlock
+                    Margin="0,0,0,8"
+                    Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"
+                    Text="{x:Static properties:Resources.Menu_Advanced}" />
 
-                <!-- 核心调度器 -->
+                <!--  核心调度器  -->
                 <ui:CardControl Margin="0,0,0,8" Padding="12">
                     <ui:CardControl.Icon>
-                        <ui:FontIcon FontSize="22" FontFamily="{DynamicResource SegoeFluentIcons}" Glyph="&#xEA86;"/>
+                        <ui:FontIcon
+                            FontFamily="{DynamicResource SegoeFluentIcons}"
+                            FontSize="22"
+                            Glyph="&#xEA86;" />
                     </ui:CardControl.Icon>
                     <ui:CardControl.Header>
-                        <TextBlock Text="{x:Static properties:Resources.Menu_Scheduler}" FontSize="14" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                        <TextBlock
+                            FontSize="14"
+                            Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"
+                            Text="{x:Static properties:Resources.Menu_Scheduler}" />
                     </ui:CardControl.Header>
 
-                    <ComboBox Width="140" 
-                              ItemsSource="{Binding SchedulerModes}"
-                              DisplayMemberPath="Name"
-                              SelectedValuePath="Type"
-                              SelectedValue="{Binding CurrentSchedulerType, Mode=TwoWay}"
-                              IsEnabled="{Binding AdminStatus.IsSuccess}">
-                    </ComboBox>
+                    <ComboBox
+                        Width="140"
+                        DisplayMemberPath="Name"
+                        IsEnabled="{Binding AdminStatus.IsSuccess}"
+                        ItemsSource="{Binding SchedulerModes}"
+                        SelectedValue="{Binding CurrentSchedulerType, Mode=TwoWay}"
+                        SelectedValuePath="Type" />
                 </ui:CardControl>
 
-                <!-- NUMA 跨越 -->
+                <!--  NUMA 跨越  -->
                 <ui:CardControl Margin="0,0,0,8" Padding="12">
                     <ui:CardControl.Icon>
-                        <ui:FontIcon FontSize="22" FontFamily="{DynamicResource SegoeFluentIcons}" Glyph="&#xF57C;"/>
-                    </ui:CardControl.Icon>
-                    <ui:CardControl.Header>
-                        <StackPanel>
-                            <TextBlock Text="{x:Static properties:Resources.Menu_NumaSpan}" FontSize="14" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
-                            <TextBlock Text="{x:Static properties:Resources.Desc_NumaSpan}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
-                        </StackPanel>
-                    </ui:CardControl.Header>
-
-                    <ui:ToggleSwitch IsChecked="{Binding IsNumaSpanningEnabled, Mode=TwoWay}"
-                                     IsEnabled="{Binding AdminStatus.IsSuccess}"/>
-                </ui:CardControl>
-
-                <!-- DDA 策略 -->
-                <ui:CardControl Margin="0,0,0,8" Padding="12">
-                    <ui:CardControl.Icon>
-                        <ui:FontIcon FontSize="22" FontFamily="{DynamicResource SegoeFluentIcons}" Glyph="&#xED56;"/>
+                        <ui:FontIcon
+                            FontFamily="{DynamicResource SegoeFluentIcons}"
+                            FontSize="22"
+                            Glyph="&#xF57C;" />
                     </ui:CardControl.Icon>
                     <ui:CardControl.Header>
                         <StackPanel>
-                            <TextBlock Text="{x:Static properties:Resources.Menu_UnlockHard}" FontSize="14" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
-                            <TextBlock Text="{x:Static properties:Resources.Desc_UnlockHard}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock
+                                FontSize="14"
+                                Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"
+                                Text="{x:Static properties:Resources.Menu_NumaSpan}" />
+                            <TextBlock
+                                FontSize="12"
+                                Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
+                                Text="{x:Static properties:Resources.Desc_NumaSpan}" />
                         </StackPanel>
                     </ui:CardControl.Header>
-                    <ui:ToggleSwitch IsChecked="{Binding IsGpuStrategyEnabled, Mode=TwoWay}"
-                                     IsEnabled="{Binding IsGpuStrategyToggleEnabled}"/>
+
+                    <ui:ToggleSwitch IsChecked="{Binding IsNumaSpanningEnabled, Mode=TwoWay}" IsEnabled="{Binding AdminStatus.IsSuccess}" />
                 </ui:CardControl>
 
-                <!-- 系统切换 (服务器版本切换) Card -->
+                <!--  DDA 策略  -->
                 <ui:CardControl Margin="0,0,0,8" Padding="12">
                     <ui:CardControl.Icon>
-                        <ui:FontIcon FontSize="22" FontFamily="{DynamicResource SegoeFluentIcons}" Glyph="&#xE8D7;"/>
+                        <ui:FontIcon
+                            FontFamily="{DynamicResource SegoeFluentIcons}"
+                            FontSize="22"
+                            Glyph="&#xED56;" />
                     </ui:CardControl.Icon>
                     <ui:CardControl.Header>
                         <StackPanel>
-                            <TextBlock Text="{x:Static properties:Resources.Menu_SwitchServer}" FontSize="14" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
-                            <TextBlock Text="{x:Static properties:Resources.Desc_SwitchServer}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock
+                                FontSize="14"
+                                Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"
+                                Text="{x:Static properties:Resources.Menu_UnlockHard}" />
+                            <TextBlock
+                                FontSize="12"
+                                Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
+                                Text="{x:Static properties:Resources.Desc_UnlockHard}" />
                         </StackPanel>
                     </ui:CardControl.Header>
-
-                 
-                    <ui:ToggleSwitch IsChecked="{Binding IsServerSystem, Mode=TwoWay}"
-                     IsEnabled="{Binding IsSystemSwitchEnabled}"/>
+                    <ui:ToggleSwitch IsChecked="{Binding IsGpuStrategyEnabled, Mode=TwoWay}" IsEnabled="{Binding IsGpuStrategyToggleEnabled}" />
                 </ui:CardControl>
-                
+
             </StackPanel>
         </StackPanel>
     </Grid>
