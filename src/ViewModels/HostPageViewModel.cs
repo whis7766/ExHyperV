@@ -1,12 +1,12 @@
+using System.Collections.ObjectModel;
+using System.Management;
+using System.Security.Principal;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ExHyperV.Services;
 using ExHyperV.Tools;
 using Microsoft.Win32;
-using System.Collections.ObjectModel;
-using System.Management;
-using System.Security.Principal;
-using System.Windows;
 using Wpf.Ui.Controls;
 
 namespace ExHyperV.ViewModels
@@ -40,17 +40,18 @@ namespace ExHyperV.ViewModels
             new SchedulerMode(ExHyperV.Properties.Resources.Scheduler_Root, HyperVSchedulerType.Root)
         };
 
-        public HostPageViewModel() => _ = LoadInitialStatusAsync();
+        // public HostPageViewModel() => _ = LoadInitialStatusAsync();
 
         private async Task LoadInitialStatusAsync()
         {
             await Task.WhenAll(CheckSystemInfoAsync(), CheckCpuInfoAsync(), CheckHyperVInfoAsync(), CheckServerInfoAsync(), CheckIommuAsync());
-            
+
             await InitializeVersionPolicyAsync();
             _isInitialized = true;
         }
 
-        private async Task CheckSystemInfoAsync() => await Task.Run(() => {
+        private async Task CheckSystemInfoAsync() => await Task.Run(() =>
+        {
             int buildNumber = Environment.OSVersion.Version.Build;
             string baseVersion = buildNumber.ToString();
 
@@ -108,7 +109,8 @@ namespace ExHyperV.ViewModels
             InitializeProductType();
             await LoadAdvancedConfigAsync();
             IsGpuStrategyToggleEnabled = true;
-            IsSystemSwitchEnabled = true;
+            IsSystemSwitchEnabled = false;
+            // IsSystemSwitchEnabled = true;
 
             //string currentId = Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion", "EditionID", "")?.ToString() ?? "";
 
@@ -153,12 +155,14 @@ namespace ExHyperV.ViewModels
         partial void OnIsNumaSpanningEnabledChanged(bool value)
         {
             if (!_isInitialized) return;
-            _ = Task.Run(async () => {
+            _ = Task.Run(async () =>
+            {
                 var (ok, msg) = await HyperVNUMAService.SetNumaSpanningEnabledAsync(value);
                 if (!ok)
                 {
                     ShowSnackbar(Translate("Status_Title_Error"), msg, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
-                    Application.Current.Dispatcher.Invoke(() => {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
                         _isInitialized = false;
                         IsNumaSpanningEnabled = !value; // 遭遇错误回滚按钮
                         _isInitialized = true;
@@ -170,14 +174,16 @@ namespace ExHyperV.ViewModels
         partial void OnCurrentSchedulerTypeChanged(HyperVSchedulerType value)
         {
             if (!_isInitialized) return;
-            _ = Task.Run(async () => {
+            _ = Task.Run(async () =>
+            {
                 if (await HyperVSchedulerService.SetSchedulerTypeAsync(value))
                     ShowSnackbar(Translate("Status_Title_Info"), ExHyperV.Properties.Resources.Msg_Host_SchedulerChanged, ControlAppearance.Info, SymbolRegular.Info24);
                 else
                 {
                     ShowSnackbar(Translate("Status_Title_Error"), ExHyperV.Properties.Resources.Error_Host_SchedulerFail, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
                     var actual = HyperVSchedulerService.GetSchedulerType();
-                    Application.Current.Dispatcher.Invoke(() => {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
                         _isInitialized = false;
                         CurrentSchedulerType = actual; // 遭遇错误回滚选项
                         _isInitialized = true;
@@ -186,11 +192,11 @@ namespace ExHyperV.ViewModels
             });
         }
 
-        partial void OnIsServerSystemChanged(bool value)
-        {
-            if (!_isInitialized) return;
-            SwitchSystemVersion(value);
-        }
+        // partial void OnIsServerSystemChanged(bool value)
+        // {
+        //     if (!_isInitialized) return;
+        //     SwitchSystemVersion(value);
+        // }
 
 
         // 禁用 Hyper-V
@@ -290,7 +296,7 @@ foreach ($f in $features) {
             // 3. 提示重启
             ShowRestartPrompt(ExHyperV.Properties.Resources.Msg_Host_EnableSuccess);
         }
-        
+
         // 检查 PowerShell 模块是否真的装上了
         private static bool IsHyperVPowerShellModuleAvailable()
         {
@@ -356,27 +362,28 @@ foreach ($f in $features) {
         private void UpdateSystemDesc(bool isServer) =>
             SystemVersionDesc = $"{Translate("Status_Msg_CurrentVer")}: {(isServer ? Translate("Status_Edition_Server") : Translate("Status_Edition_Workstation"))}";
 
-        private async void SwitchSystemVersion(bool toServer)
-        {
-            try
-            {
-                IsSystemSwitchEnabled = false;
-                string result = await Task.Run(() => SystemSwitcher.ExecutePatch(toServer ? 1 : 2));
-                if (result == "SUCCESS") ShowRestartPrompt(Translate("Status_Msg_RestartNow"));
-                else
-                {
-                    ShowSnackbar(Translate("Status_Title_Error"), result, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
-                    _isInitialized = false; IsServerSystem = !toServer; _isInitialized = true;
-                }
-            }
-            finally { IsSystemSwitchEnabled = true; }
-        }
+        // private async void SwitchSystemVersion(bool toServer)
+        // {
+        //     try
+        //     {
+        //         IsSystemSwitchEnabled = false;
+        //         string result = await Task.Run(() => SystemSwitcher.ExecutePatch(toServer ? 1 : 2));
+        //         if (result == "SUCCESS") ShowRestartPrompt(Translate("Status_Msg_RestartNow"));
+        //         else
+        //         {
+        //             ShowSnackbar(Translate("Status_Title_Error"), result, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+        //             _isInitialized = false; IsServerSystem = !toServer; _isInitialized = true;
+        //         }
+        //     }
+        //     finally { IsSystemSwitchEnabled = true; }
+        // }
 
         private string Translate(string key) => ExHyperV.Properties.Resources.ResourceManager.GetString(key) ?? key;
 
         public void ShowSnackbar(string title, string msg, ControlAppearance app, SymbolRegular icon)
         {
-            Application.Current.Dispatcher.Invoke(() => {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
                 if (Application.Current.MainWindow?.FindName("SnackbarPresenter") is SnackbarPresenter p)
                     new Snackbar(p) { Title = title, Content = msg, Appearance = app, Icon = new SymbolIcon(icon) { FontSize = 20 }, Timeout = TimeSpan.FromSeconds(4) }.Show();
             });
@@ -384,7 +391,8 @@ foreach ($f in $features) {
 
         private void ShowRestartPrompt(string message)
         {
-            Application.Current.Dispatcher.Invoke(() => {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
                 if (Application.Current.MainWindow?.FindName("SnackbarPresenter") is not SnackbarPresenter p) return;
 
                 var grid = new System.Windows.Controls.Grid();
