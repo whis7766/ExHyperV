@@ -250,6 +250,13 @@
                             Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"
                             Text="{x:Static properties:Resources.Menu_Scheduler}" />
                     </ui:CardControl.Header>
+                    <ComboBox
+                        Width="140"
+                        DisplayMemberPath="Name"
+                        IsEnabled="{Binding AdminStatus.IsSuccess}"
+                        ItemsSource="{Binding SchedulerModes}"
+                        SelectedValue="{Binding CurrentSchedulerType, Mode=TwoWay}"
+                        SelectedValuePath="Type" />
 
                 </ui:CardControl>
 
@@ -273,7 +280,11 @@
                                 Text="{x:Static properties:Resources.Desc_NumaSpan}" />
                         </StackPanel>
                     </ui:CardControl.Header>
+
+
+                    <ui:ToggleSwitch IsChecked="{Binding IsNumaSpanningEnabled, Mode=TwoWay}" IsEnabled="{Binding AdminStatus.IsSuccess}" />
                 </ui:CardControl>
+
 
                 <!--  DDA 策略  -->
                 <ui:CardControl Margin="0,0,0,8" Padding="12">
