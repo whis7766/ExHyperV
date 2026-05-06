@@ -1,7 +1,4 @@
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
@@ -9,11 +6,14 @@ using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using ExHyperV.Behaviors;
 using ExHyperV.Models;
 using ExHyperV.Services;
 using ExHyperV.Tools;
 using Wpf.Ui.Controls;
+using System.Diagnostics;
+using System.ComponentModel;
+using System.IO;
+using ExHyperV.Behaviors;
 
 namespace ExHyperV.ViewModels
 {
@@ -58,6 +58,7 @@ namespace ExHyperV.ViewModels
         private const int MaxHistoryLength = 60;
         private readonly Dictionary<string, LinkedList<double>> _historyCache = new();
         private VmProcessorSettings _originalSettingsCache;
+        private VmMemorySettings _originalMemorySettingsCache;
         private bool _isInternalUpdating = false;
         private bool _isDiskPathManual = false; // 记录用户是否手动选择过磁盘路径
 
@@ -143,14 +144,14 @@ namespace ExHyperV.ViewModels
         private bool _needConfig = false;
 
         // Linux SSH 凭据
-        // [ObservableProperty] private string _sshHost = "";
-        // [ObservableProperty] private string _sshUsername = "root";
-        // [ObservableProperty] private string _sshPassword = "";
-        // [ObservableProperty] private int _sshPort = 22;
-        // [ObservableProperty] private bool _installGraphics = true;
-        // [ObservableProperty] private bool _useSshProxy = false;
-        // [ObservableProperty] private string _sshProxyHost = "";
-        // [ObservableProperty] private string _sshProxyPort = "";
+        [ObservableProperty] private string _sshHost = "";
+        [ObservableProperty] private string _sshUsername = "root";
+        [ObservableProperty] private string _sshPassword = "";
+        [ObservableProperty] private int _sshPort = 22;
+        [ObservableProperty] private bool _installGraphics = true;
+        [ObservableProperty] private bool _useSshProxy = false;
+        [ObservableProperty] private string _sshProxyHost = "";
+        [ObservableProperty] private string _sshProxyPort = "";
         private CancellationTokenSource? _gpuDeploymentCts;
 
         // 日志与控制台
@@ -163,8 +164,8 @@ namespace ExHyperV.ViewModels
 
         // Linux 部署字段
 
-        // [ObservableProperty] private ObservableCollection<LinuxScriptItem> _availableLinuxScripts = new();
-        // [ObservableProperty] private LinuxScriptItem _selectedLinuxScript;
+        [ObservableProperty] private ObservableCollection<LinuxScriptItem> _availableLinuxScripts = new();
+        [ObservableProperty] private LinuxScriptItem _selectedLinuxScript;
 
         public VirtualMachinesPageViewModel(VmQueryService queryService, VmPowerService powerService)
         {
@@ -188,8 +189,7 @@ namespace ExHyperV.ViewModels
             _uiTimer.Tick += (s, e) => { foreach (var vm in VmList) vm.TickUptime(); };
             _uiTimer.Start();
 
-            Task.Run(async () =>
-            {
+            Task.Run(async () => {
                 await Task.Delay(300);
                 Application.Current.Dispatcher.Invoke(() => LoadVmsCommand.Execute(null));
             });
@@ -585,7 +585,7 @@ namespace ExHyperV.ViewModels
             };
             if (dialog.ShowDialog() == true) NewVmIsoPath = dialog.FileName;
         }
-
+        
         [RelayCommand]
         private async Task ConfirmCreate()
         {
@@ -766,6 +766,7 @@ namespace ExHyperV.ViewModels
             }
             CurrentViewType = VmDetailViewType.Dashboard;
             _originalSettingsCache = null;
+            _originalMemorySettingsCache = null;
             HostDisks.Clear();
         }
 
@@ -776,8 +777,7 @@ namespace ExHyperV.ViewModels
             {
                 var list = await _vmBootService.GetBootOrderAsync(vm.Name);
 
-                Application.Current.Dispatcher.Invoke(() =>
-                {
+                Application.Current.Dispatcher.Invoke(() => {
                     vm.BootOrderItems.Clear();
                     foreach (var item in list)
                     {
@@ -818,8 +818,7 @@ namespace ExHyperV.ViewModels
             instance.IpAddress = vm.IpAddress;
 
             // 绑定电源控制命令 (必须绑定，否则新发现的 VM 按钮无效)
-            instance.ControlCommand = new AsyncRelayCommand<string>(async (action) =>
-            {
+            instance.ControlCommand = new AsyncRelayCommand<string>(async (action) => {
                 instance.SetTransientState(GetOptimisticText(action));
                 try
                 {
@@ -852,8 +851,7 @@ namespace ExHyperV.ViewModels
             IsLoading = true;
             try
             {
-                var finalCollection = await Task.Run(async () =>
-                {
+                var finalCollection = await Task.Run(async () => {
                     var vms = await _queryService.GetVmListAsync();
                     var list = new ObservableCollection<VmInstanceInfo>();
                     foreach (var vm in vms)
@@ -876,8 +874,7 @@ namespace ExHyperV.ViewModels
                         instance.SyncBackendData(vm.State, vm.RawUptime);
 
                         // 绑定电源控制命令
-                        instance.ControlCommand = new AsyncRelayCommand<string>(async (action) =>
-                        {
+                        instance.ControlCommand = new AsyncRelayCommand<string>(async (action) => {
                             instance.SetTransientState(GetOptimisticText(action));
                             try
                             {
@@ -955,38 +952,38 @@ namespace ExHyperV.ViewModels
 
 
         // 修改原本启动外部 vmconnect.exe 的逻辑
-        // [RelayCommand]
-        // private void OpenNativeConnect()
-        // {
-        //     if (SelectedVm == null) return;
+        [RelayCommand]
+        private void OpenNativeConnect()
+        {
+            if (SelectedVm == null) return;
 
-        //     try
-        //     {
-        //         // 1. 实例化我们自己的沉浸式控制台窗口
-        //         // 传入当前选中虚拟机的 GUID (Id.ToString()) 和 名称
-        //         var consoleWin = new ExHyperV.Views.ConsoleWindow(
-        //             SelectedVm.Id.ToString(),
-        //             SelectedVm.Name
-        //         );
+            try
+            {
+                // 1. 实例化我们自己的沉浸式控制台窗口
+                // 传入当前选中虚拟机的 GUID (Id.ToString()) 和 名称
+                var consoleWin = new ExHyperV.Views.ConsoleWindow(
+                    SelectedVm.Id.ToString(),
+                    SelectedVm.Name
+                );
 
-        //         // 2. 设置所有者为当前主窗口（这样主窗口关闭时，控制台也会跟着关，且弹出位置更准确）
-        //         //consoleWin.Owner = Application.Current.MainWindow;
+                // 2. 设置所有者为当前主窗口（这样主窗口关闭时，控制台也会跟着关，且弹出位置更准确）
+                //consoleWin.Owner = Application.Current.MainWindow;
 
-        //         // 3. 显示窗口
-        //         consoleWin.Show();
+                // 3. 显示窗口
+                consoleWin.Show();
 
-        //         // 4. (可选) 给个小反馈
-        //         Debug.WriteLine(string.Format(Properties.Resources.VirtualMachinesPageViewModel_3, SelectedVm.Name));
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //         ShowSnackbar(
-        //             Properties.Resources.Error_Vm_StartFail,
-        //             string.Format(Properties.Resources.VirtualMachinesPageViewModel_4, ex.Message),
-        //             ControlAppearance.Danger,
-        //             SymbolRegular.ErrorCircle24);
-        //     }
-        // }
+                // 4. (可选) 给个小反馈
+                Debug.WriteLine(string.Format(Properties.Resources.VirtualMachinesPageViewModel_3, SelectedVm.Name));
+            }
+            catch (Exception ex)
+            {
+                ShowSnackbar(
+                    Properties.Resources.Error_Vm_StartFail,
+                    string.Format(Properties.Resources.VirtualMachinesPageViewModel_4, ex.Message),
+                    ControlAppearance.Danger,
+                    SymbolRegular.ErrorCircle24);
+            }
+        }
 
         // 修改操作系统标签
         [RelayCommand]
@@ -1048,8 +1045,7 @@ namespace ExHyperV.ViewModels
                     await _queryService.UpdateDiskPerformanceAsync(VmList);
                     var gpuUsageMap = await _queryService.GetGpuPerformanceAsync(VmList);
 
-                    Application.Current.Dispatcher.Invoke(() =>
-                    {
+                    Application.Current.Dispatcher.Invoke(() => {
                         bool needsResort = false;
 
                         // --- A. 监测删除：移除本地列表中 已经不存在于后端 的 VM ---
@@ -1148,14 +1144,12 @@ namespace ExHyperV.ViewModels
                                     {
                                         if (!string.IsNullOrEmpty(adapter.MacAddress) && (adapter.IpAddresses == null || adapter.IpAddresses.Count == 0))
                                         {
-                                            _ = Task.Run(async () =>
-                                            {
+                                            _ = Task.Run(async () => {
                                                 try
                                                 {
                                                     string arpIp = await Utils.GetVmIpAddressAsync(vm.Name, adapter.MacAddress);
                                                     if (!string.IsNullOrEmpty(arpIp))
-                                                        Application.Current.Dispatcher.Invoke(() =>
-                                                        {
+                                                        Application.Current.Dispatcher.Invoke(() => {
                                                             adapter.IpAddresses = new List<string> { arpIp };
                                                             if (vm.IpAddress == "---" || string.IsNullOrWhiteSpace(vm.IpAddress)) vm.IpAddress = arpIp;
                                                         });
@@ -1256,8 +1250,7 @@ namespace ExHyperV.ViewModels
                 var freshData = allVms.FirstOrDefault(x => x.Name == vm.Name);
                 if (freshData != null)
                 {
-                    Application.Current.Dispatcher.Invoke(() =>
-                    {
+                    Application.Current.Dispatcher.Invoke(() => {
                         vm.SyncBackendData(freshData.State, freshData.RawUptime);
                         vm.Disks.Clear();
                         foreach (var disk in freshData.Disks) vm.Disks.Add(disk);
@@ -1514,6 +1507,8 @@ namespace ExHyperV.ViewModels
             if (SelectedVm == null) return;
             CurrentViewType = VmDetailViewType.MemorySettings;
             IsLoadingSettings = true;
+
+            _isInternalUpdating = true; // 开启拦截：加载过程中不触发任何 PropertyChanged 逻辑
             try
             {
                 var settings = await _vmMemoryService.GetVmMemorySettingsAsync(SelectedVm.Name);
@@ -1521,50 +1516,77 @@ namespace ExHyperV.ViewModels
                 {
                     if (SelectedVm.MemorySettings != null)
                         SelectedVm.MemorySettings.PropertyChanged -= MemorySettings_PropertyChanged;
+
                     SelectedVm.MemorySettings = settings;
+                    _originalMemorySettingsCache = settings.Clone(); // 加载成功时缓存原始状态
                     SelectedVm.MemorySettings.PropertyChanged += MemorySettings_PropertyChanged;
                 }
             }
-            catch (Exception ex) { ShowSnackbar(Properties.Resources.Common_Error, string.Format(Properties.Resources.Error_Format_LoadFail, Utils.GetFriendlyErrorMessages(ex.Message)), ControlAppearance.Danger, SymbolRegular.ErrorCircle24); }
+            catch (Exception ex)
+            {
+                ShowSnackbar(Properties.Resources.Common_Error, ex.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+            }
             finally
             {
-                await Task.Delay(200);
+                await Task.Delay(100);
+                _isInternalUpdating = false; // 加载完毕，恢复监听
                 IsLoadingSettings = false;
             }
         }
-
-        // 监听内存属性变更以实现部分自动应用
         private async void MemorySettings_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            var fastTrackProps = new[] { nameof(VmMemorySettings.BackingPageSize), nameof(VmMemorySettings.DynamicMemoryEnabled), nameof(VmMemorySettings.MemoryEncryptionPolicy) };
+            if (_isInternalUpdating || IsLoadingSettings || SelectedVm?.MemorySettings == null)
+                return;
+
+            var fastTrackProps = new[] {
+                nameof(VmMemorySettings.BackingPageSize),
+                nameof(VmMemorySettings.DynamicMemoryEnabled),
+                nameof(VmMemorySettings.MemoryEncryptionPolicy),
+                nameof(VmMemorySettings.BackingType),
+                nameof(VmMemorySettings.MemoryAccessTrackingState),
+                nameof(VmMemorySettings.MemoryAccessTrackingPolicy),
+                nameof(VmMemorySettings.EnableColdHint),
+                nameof(VmMemorySettings.EnableHotHint),
+                nameof(VmMemorySettings.EnableEpf),
+                nameof(VmMemorySettings.EnablePrivateCompressionStore),
+                nameof(VmMemorySettings.SgxEnabled),
+                nameof(VmMemorySettings.CxlEnabled),
+                nameof(VmMemorySettings.EnableGpaPinning),
+                nameof(VmMemorySettings.DynMemOperationAlignment),
+                nameof(VmMemorySettings.MaxMemoryBlocksPerNumaNode)
+            };
+
             if (fastTrackProps.Contains(e.PropertyName))
             {
-                if (IsLoadingSettings || SelectedVm == null || SelectedVm.IsRunning || SelectedVm.MemorySettings == null)
-                    return;
+                if (SelectedVm.IsRunning) return;
 
+                // 移除以前错误的 var backup = SelectedVm.MemorySettings.Clone();
+
+                _isInternalUpdating = true;
                 IsLoadingSettings = true;
                 try
                 {
-                    var result = await _vmMemoryService.SetVmMemorySettingsAsync(
-    SelectedVm.Name,
-    SelectedVm.MemorySettings,
-    SelectedVm.IsRunning // 传入当前运行状态
-);
+                    var result = await _vmMemoryService.SetVmMemorySettingsAsync(SelectedVm.Name, SelectedVm.MemorySettings, false);
                     if (!result.Success)
                     {
-                        ShowSnackbar(Properties.Resources.Error_Memory_AutoApply, result.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
-                        await GoToMemorySettings();
+                        ShowSnackbar("修改失败", result.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+
+                        // 核心修复：使用真正纯净的初始缓存进行弹回恢复
+                        SelectedVm.MemorySettings.Restore(_originalMemorySettingsCache);
                     }
-                    else OnPropertyChanged(nameof(SelectedVm));
+                    else
+                    {
+                        // 如果修改成功，需要更新基准缓存为当前状态，否则下次别的选项失败时，会把这次成功的修改也弹回去
+                        _originalMemorySettingsCache = SelectedVm.MemorySettings.Clone();
+                    }
                 }
                 finally
                 {
-                    await Task.Delay(200);
                     IsLoadingSettings = false;
+                    _isInternalUpdating = false;
                 }
             }
         }
-
         // 手动应用内存设置
         [RelayCommand]
         private async Task ApplyMemorySettings()
@@ -1577,12 +1599,64 @@ namespace ExHyperV.ViewModels
                     SelectedVm.Name,
                     SelectedVm.MemorySettings,
                     SelectedVm.IsRunning // 传入当前运行状态
-                ); if (!result.Success) ShowSnackbar(Properties.Resources.Error_Common_SaveFail, Utils.GetFriendlyErrorMessages(result.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                );
+
+                if (!result.Success)
+                {
+                    ShowSnackbar(Properties.Resources.Error_Common_SaveFail, Utils.GetFriendlyErrorMessages(result.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                }
+                else
+                {
+                    // 保存成功后更新缓存基准
+                    _originalMemorySettingsCache = SelectedVm.MemorySettings.Clone();
+                }
+
                 await GoToMemorySettings();
             }
-            catch (Exception ex) { ShowSnackbar(Properties.Resources.Common_ExceptionLabel, Utils.GetFriendlyErrorMessages(ex.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24); }
+            catch (Exception ex)
+            {
+                ShowSnackbar(Properties.Resources.Common_ExceptionLabel, Utils.GetFriendlyErrorMessages(ex.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+            }
             finally { IsLoadingSettings = false; }
         }
+        // --- 实验性功能的纯中文数据源 (禁止任何英文) ---
+
+        public List<object> BackingTypeOptions { get; } = new()
+{
+    new { Value = (byte)0, Name = "物理映射模式" },
+    new { Value = (byte)1, Name = "虚拟映射模式" },
+    new { Value = (byte)2, Name = "混合映射模式" }
+};
+
+        public List<object> MemoryByteGranularityOptions { get; } = new()
+{
+    new { Value = (byte)0, Name = "系统自动分配" },
+    new { Value = (byte)1, Name = "标准粒度" },
+    new { Value = (byte)2, Name = "大页粒度" },
+    new { Value = (byte)3, Name = "巨型页粒度" }
+};
+        public List<object> MemoryUintGranularityOptions { get; } = new()
+{
+    new { Value = (uint)0, Name = "系统自动分配" },
+    new { Value = (uint)1, Name = "标准粒度" },
+    new { Value = (uint)2, Name = "大页粒度" },
+    new { Value = (uint)3, Name = "巨型页粒度" }
+};
+            
+
+        public List<object> MemoryTrackingStateOptions { get; } = new()
+{
+    new { Value = (byte)0, Name = "关闭跟踪" },
+    new { Value = (byte)1, Name = "开启跟踪" },
+    new { Value = (byte)2, Name = "按处理器节点配置" }
+};
+
+        public List<object> SgxLaunchControlOptions { get; } = new()
+{
+    new { Value = (uint)0, Name = "禁止访问" },
+    new { Value = (uint)1, Name = "仅限读取" },
+    new { Value = (uint)2, Name = "允许读写" }
+};
 
         // ----------------------------------------------------------------------------------
         // 存储管理模块 - 列表与基础操作
@@ -1617,6 +1691,47 @@ namespace ExHyperV.ViewModels
                 Application.Current.Dispatcher.Invoke(() => HostDisks = new ObservableCollection<HostDiskInfo>(disks));
             }
             catch { }
+        }
+
+
+        // 优化磁盘
+        [RelayCommand]
+        private async Task OptimizeStorage(VmStorageItem item)
+        {
+            // 空值、正在运行、或已经在优化中的磁盘不处理
+            if (item == null || SelectedVm == null || SelectedVm.IsRunning || item.IsOptimizing) return;
+
+            // 进入优化状态
+            item.IsOptimizing = true;
+
+            try
+            {
+                // 1. 发起 WMI 压缩指令
+                // 虽然 await 会等待，但由于 vmms.exe 承载了 Job，即便 UI 崩溃，任务依然在后台跑
+                var result = await _storageService.CompactDiskAsync(item.PathOrDiskNumber);
+
+                if (result.Success)
+                {
+                    // 2. 刷新磁盘物理大小 (FileSize)
+                    // 调用现有的存储服务，确保 UI 上的 GB 数值得到更新
+                    await _storageService.RefreshVirtualDiskSizesAsync(SelectedVm);
+
+                    ShowSnackbar("优化完成", "虚拟磁盘空间已成功回收", ControlAppearance.Success, SymbolRegular.CheckmarkCircle24);
+                }
+                else
+                {
+                    ShowSnackbar("优化失败", result.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowSnackbar("系统异常", ex.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+            }
+            finally
+            {
+                // 3. 释放优化状态
+                item.IsOptimizing = false;
+            }
         }
 
         // 移除存储设备
@@ -1971,7 +2086,7 @@ namespace ExHyperV.ViewModels
                 if (openDialog.ShowDialog() == true) FilePath = openDialog.FileName;
             }
         }
-
+        
         // 浏览文件夹 (用于ISO制作)
         [RelayCommand]
         private void BrowseFolder()
@@ -2159,8 +2274,7 @@ namespace ExHyperV.ViewModels
 
                 // 2. 关键步骤：使用 Dispatcher 确保 UI 已处理完 ItemsSource 的变更通知
                 // 使用 Loaded 优先级，这会等待 ComboBox 完成内部项的生成
-                Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-                {
+                Application.Current.Dispatcher.BeginInvoke(new Action(() => {
 
                     // --- 强刷 [编号] ---
                     var targetNum = AvailableControllerNumbers.Contains(ctrlNum) ? ctrlNum : (AvailableControllerNumbers.Count > 0 ? AvailableControllerNumbers[0] : 0);
@@ -2362,8 +2476,7 @@ namespace ExHyperV.ViewModels
                 // IP 探测
                 if (SelectedVm.IsRunning)
                 {
-                    _ = Task.Run(async () =>
-                    {
+                    _ = Task.Run(async () => {
                         await _vmNetworkService.FillDynamicIpsAsync(SelectedVm.Name, SelectedVm.NetworkAdapters);
                     });
                 }
@@ -2760,8 +2873,7 @@ namespace ExHyperV.ViewModels
                     tempList.Add(assignment);
                 }
 
-                Application.Current.Dispatcher.Invoke(() =>
-                {
+                Application.Current.Dispatcher.Invoke(() => {
                     bool isHardwareSame = SelectedVm.AssignedGpus.Count == tempList.Count &&
                                          SelectedVm.AssignedGpus.Select(x => x.AdapterId)
                                                       .SequenceEqual(tempList.Select(x => x.AdapterId));
@@ -2811,8 +2923,7 @@ namespace ExHyperV.ViewModels
 
                 if (success)
                 {
-                    Application.Current.Dispatcher.Invoke(() =>
-                    {
+                    Application.Current.Dispatcher.Invoke(() => {
                         SelectedVm.AssignedGpus.Remove(itemToRemove);
                         if (SelectedVm.AssignedGpus.Count == 0)
                         {
@@ -2859,9 +2970,9 @@ namespace ExHyperV.ViewModels
                 SelectedHostGpu = null;
 
                 // 2. 加载 Linux 脚本列表 (重写部分)
-                // var scripts = await _vmGpuService.GetAvailableScriptsAsync();
-                // AvailableLinuxScripts = new ObservableCollection<LinuxScriptItem>(scripts);
-                // SelectedLinuxScript = AvailableLinuxScripts.FirstOrDefault(); // 默认选中第一个（通常是本地脚本）
+                var scripts = await _vmGpuService.GetAvailableScriptsAsync();
+                AvailableLinuxScripts = new ObservableCollection<LinuxScriptItem>(scripts);
+                SelectedLinuxScript = AvailableLinuxScripts.FirstOrDefault(); // 默认选中第一个（通常是本地脚本）
 
                 CurrentViewType = VmDetailViewType.AddGpuSelect;
             }
@@ -3092,17 +3203,17 @@ namespace ExHyperV.ViewModels
                                         if (!syncRes.Success) throw new Exception(syncRes.Message);
                                         task.Description = Properties.Resources.Msg_Gpu_DriverOk;
                                     }
-                                    // else if (singlePart.OsType == OperatingSystemType.Linux)
-                                    // {
-                                    //     // 2. [新增] 如果是 Linux 且单一，直接触发 SelectPartition 流程（嗅探 IP 并显示 SSH 表单）
-                                    //     task.Description = "Detecting Linux system, jumping to SSH setup..."; // 建议放入资源文件
-                                    //     AppendLog("Detected single Linux partition. Automating environment preparation...");
+                                    else if (singlePart.OsType == OperatingSystemType.Linux)
+                                    {
+                                        // 2. [新增] 如果是 Linux 且单一，直接触发 SelectPartition 流程（嗅探 IP 并显示 SSH 表单）
+                                        task.Description = "Detecting Linux system, jumping to SSH setup..."; // 建议放入资源文件
+                                        AppendLog("Detected single Linux partition. Automating environment preparation...");
 
-                                    //     // 异步启动 Linux 准备工作流（即你点击列表项时触发的逻辑）
-                                    //     _ = Task.Run(async () => await SelectPartitionAndContinueCommand.ExecuteAsync(singlePart));
+                                        // 异步启动 Linux 准备工作流（即你点击列表项时触发的逻辑）
+                                        _ = Task.Run(async () => await SelectPartitionAndContinueCommand.ExecuteAsync(singlePart));
 
-                                    //     return; // 退出当前循环，由 SelectPartitionAndContinue 接管后续逻辑
-                                    // }
+                                        return; // 退出当前循环，由 SelectPartitionAndContinue 接管后续逻辑
+                                    }
                                 }
                                 else
                                 {
@@ -3134,7 +3245,7 @@ namespace ExHyperV.ViewModels
                     AppendLog(string.Format(Properties.Resources.Error_Format_StageExc, task.Name, ex.Message));
                     if (!string.IsNullOrEmpty(_currentProcessingGpuAdapterId))
                     {
-                        // AppendLog(Properties.Resources.Error_Gpu_LinuxRollback); 
+                        AppendLog(Properties.Resources.Error_Gpu_LinuxRollback); 
                         await _vmGpuService.RemoveGpuPartitionAsync(SelectedVm.Name, _currentProcessingGpuAdapterId);
                         _currentProcessingGpuAdapterId = null;
                         AppendLog(Properties.Resources.Msg_Gpu_PartitionRemoved);
@@ -3166,8 +3277,7 @@ namespace ExHyperV.ViewModels
                     SelectedHostGpu.Pname,
                     SelectedHostGpu.Manu,
                     partition,
-                    msg =>
-                    {
+                    msg => {
                         driveTask.Description = msg;
                         AppendLog(msg);
                     });
@@ -3191,198 +3301,198 @@ namespace ExHyperV.ViewModels
                     driveTask.Description = result.Message;
                 }
             }
-            // else if (partition.OsType == OperatingSystemType.Linux)
-            // {
-            //     SelectedPartition = partition;
-            //     IsLoadingSettings = true;
+            else if (partition.OsType == OperatingSystemType.Linux)
+            {
+                SelectedPartition = partition;
+                IsLoadingSettings = true;
 
-            //     // UI 状态转换：保持卡片开启，但切换到 SSH 表单 Grid
-            //     ShowPartitionSelector = true;
-            //     ShowSshForm = true;
+                // UI 状态转换：保持卡片开启，但切换到 SSH 表单 Grid
+                ShowPartitionSelector = true;
+                ShowSshForm = true;
 
-            //     driveTask.Description = Properties.Resources.Msg_Gpu_LinuxVm;
-            //     AppendLog(string.Format(Properties.Resources.Msg_Gpu_LinuxRemoteInit, partition.DisplayName));
-            //     try
-            //     {
-            //         // --- 自动探测宿主代理 (不修改全局变量) ---
-            //         UseSshProxy = false; // 默认关闭开关
-            //         try
-            //         {
-            //             var systemProxy = System.Net.WebRequest.DefaultWebProxy;
-            //             var proxyUri = systemProxy.GetProxy(new Uri("https://github.com"));
-            //             if (proxyUri != null && !proxyUri.Host.Equals("github.com", StringComparison.OrdinalIgnoreCase))
-            //             {
-            //                 SshProxyHost = proxyUri.Host;
-            //                 SshProxyPort = proxyUri.Port.ToString();
-            //             }
-            //         }
-            //         catch { /* 静默失败 */ }
+                driveTask.Description = Properties.Resources.Msg_Gpu_LinuxVm;
+                AppendLog(string.Format(Properties.Resources.Msg_Gpu_LinuxRemoteInit, partition.DisplayName));
+                try
+                {
+                    // --- 自动探测宿主代理 (不修改全局变量) ---
+                    UseSshProxy = false; // 默认关闭开关
+                    try
+                    {
+                        var systemProxy = System.Net.WebRequest.DefaultWebProxy;
+                        var proxyUri = systemProxy.GetProxy(new Uri("https://github.com"));
+                        if (proxyUri != null && !proxyUri.Host.Equals("github.com", StringComparison.OrdinalIgnoreCase))
+                        {
+                            SshProxyHost = proxyUri.Host;
+                            SshProxyPort = proxyUri.Port.ToString();
+                        }
+                    }
+                    catch { /* 静默失败 */ }
 
-            //         // 检查虚拟机电源状态
-            //         var status = await _vmGpuService.IsVmPoweredOffAsync(SelectedVm.Name);
-            //         // 在 SelectPartitionAndContinue 方法内部：
-            //         if (status.IsOff)
-            //         {
-            //             driveTask.Description = Properties.Resources.Msg_Gpu_IpSniff;
-            //             AppendLog(driveTask.Description);
+                    // 检查虚拟机电源状态
+                    var status = await _vmGpuService.IsVmPoweredOffAsync(SelectedVm.Name);
+                    // 在 SelectPartitionAndContinue 方法内部：
+                    if (status.IsOff)
+                    {
+                        driveTask.Description = Properties.Resources.Msg_Gpu_IpSniff;
+                        AppendLog(driveTask.Description);
 
-            //             // 1. 执行开机
-            //             await _powerService.ExecuteControlActionAsync(SelectedVm.Name, "Start");
+                        // 1. 执行开机
+                        await _powerService.ExecuteControlActionAsync(SelectedVm.Name, "Start");
 
-            //             // 2. 【新增】立刻强制同步一次 UI 状态，不等后台循环
-            //             await SyncSingleVmStateAsync(SelectedVm);
+                        // 2. 【新增】立刻强制同步一次 UI 状态，不等后台循环
+                        await SyncSingleVmStateAsync(SelectedVm);
 
-            //             await Task.Delay(3000); // 给系统一点反应时间
-            //         }
+                        await Task.Delay(3000); // 给系统一点反应时间
+                    }
 
-            //         driveTask.Description = Properties.Resources.Msg_Gpu_IpScanning;
-            //         AppendLog(driveTask.Description);
+                    driveTask.Description = Properties.Resources.Msg_Gpu_IpScanning;
+                    AppendLog(driveTask.Description);
 
-            //         // 扫描 IP
-            //         string vmIp = await Task.Run(async () =>
-            //         {
-            //             string getMacScript = $"(Get-VMNetworkAdapter -VMName '{SelectedVm.Name}').MacAddress | Select-Object -First 1";
-            //             var macResult = Utils.Run(getMacScript);
-            //             if (macResult != null && macResult.Count > 0)
-            //             {
-            //                 string rawMac = macResult[0].ToString();
-            //                 string formattedMac = System.Text.RegularExpressions.Regex.Replace(rawMac, "(.{2})", "$1:").TrimEnd(':');
-            //                 for (int i = 0; i < 3; i++)
-            //                 {
-            //                     var ip = await Utils.GetVmIpAddressAsync(SelectedVm.Name, formattedMac);
-            //                     if (!string.IsNullOrEmpty(ip)) return ip;
-            //                     await Task.Delay(2000);
-            //                 }
-            //             }
-            //             return string.Empty;
-            //         });
+                    // 扫描 IP
+                    string vmIp = await Task.Run(async () =>
+                    {
+                        string getMacScript = $"(Get-VMNetworkAdapter -VMName '{SelectedVm.Name}').MacAddress | Select-Object -First 1";
+                        var macResult = Utils.Run(getMacScript);
+                        if (macResult != null && macResult.Count > 0)
+                        {
+                            string rawMac = macResult[0].ToString();
+                            string formattedMac = System.Text.RegularExpressions.Regex.Replace(rawMac, "(.{2})", "$1:").TrimEnd(':');
+                            for (int i = 0; i < 3; i++)
+                            {
+                                var ip = await Utils.GetVmIpAddressAsync(SelectedVm.Name, formattedMac);
+                                if (!string.IsNullOrEmpty(ip)) return ip;
+                                await Task.Delay(2000);
+                            }
+                        }
+                        return string.Empty;
+                    });
 
-            //         if (!string.IsNullOrEmpty(vmIp))
-            //         {
-            //             SshHost = Utils.SelectBestIpv4Address(vmIp);
-            //             AppendLog(string.Format(Properties.Resources.Msg_Gpu_IpOk, SshHost));
-            //         }
-            //         else
-            //         {
-            //             AppendLog(Properties.Resources.Error_Gpu_IpManual);
-            //         }
+                    if (!string.IsNullOrEmpty(vmIp))
+                    {
+                        SshHost = Utils.SelectBestIpv4Address(vmIp);
+                        AppendLog(string.Format(Properties.Resources.Msg_Gpu_IpOk, SshHost));
+                    }
+                    else
+                    {
+                        AppendLog(Properties.Resources.Error_Gpu_IpManual);
+                    }
 
-            //         driveTask.Description = Properties.Resources.Msg_Gpu_SshConfirm;
-            //     }
-            //     catch (Exception ex)
-            //     {
-            //         ShowSnackbar(Properties.Resources.Error_Gpu_EnvFail, ex.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
-            //         AppendLog(string.Format(Properties.Resources.Warn_Gpu_EnvExc, ex.Message));
-            //     }
-            //     finally
-            //     {
-            //         IsLoadingSettings = false;
-            //     }
-            // }
+                    driveTask.Description = Properties.Resources.Msg_Gpu_SshConfirm;
+                }
+                catch (Exception ex)
+                {
+                    ShowSnackbar(Properties.Resources.Error_Gpu_EnvFail, ex.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                    AppendLog(string.Format(Properties.Resources.Warn_Gpu_EnvExc, ex.Message));
+                }
+                finally
+                {
+                    IsLoadingSettings = false;
+                }
+            }
         }
         // 开始 Linux 部署
         // 开始 Linux 部署
-        // [RelayCommand] // 之前缺失这个特性，导致按钮无效
-        // private async Task StartLinuxDeploy()
-        // {
-        //     _gpuDeploymentCts?.Cancel();
-        //     _gpuDeploymentCts = new CancellationTokenSource();
-        //     var token = _gpuDeploymentCts.Token;
+        [RelayCommand] // 之前缺失这个特性，导致按钮无效
+        private async Task StartLinuxDeploy()
+        {
+            _gpuDeploymentCts?.Cancel();
+            _gpuDeploymentCts = new CancellationTokenSource();
+            var token = _gpuDeploymentCts.Token;
 
-        //     // 1. 定位驱动安装任务项
-        //     var driveTask = GpuTasks.FirstOrDefault(t => t.TaskType == GpuTaskType.Driver);
-        //     if (driveTask == null) return;
+            // 1. 定位驱动安装任务项
+            var driveTask = GpuTasks.FirstOrDefault(t => t.TaskType == GpuTaskType.Driver);
+            if (driveTask == null) return;
 
-        //     // 2. 验证
-        //     if (SelectedLinuxScript == null || string.IsNullOrWhiteSpace(SshHost))
-        //     {
-        //         ShowSnackbar(Properties.Resources.Error_Common_Verify, Properties.Resources.VirtualMachinesPageViewModel_20, ControlAppearance.Caution, SymbolRegular.Warning24);
-        //         return;
-        //     }
+            // 2. 验证
+            if (SelectedLinuxScript == null || string.IsNullOrWhiteSpace(SshHost))
+            {
+                ShowSnackbar(Properties.Resources.Error_Common_Verify, Properties.Resources.VirtualMachinesPageViewModel_20, ControlAppearance.Caution, SymbolRegular.Warning24);
+                return;
+            }
 
-        //     // 3. 代理参数解析
-        //     int? proxyPort = null;
-        //     string proxyHost = string.Empty;
-        //     if (UseSshProxy)
-        //     {
-        //         proxyHost = SshProxyHost?.Trim() ?? string.Empty;
-        //         if (!int.TryParse(SshProxyPort, out int port) || string.IsNullOrWhiteSpace(proxyHost))
-        //         {
-        //             ShowSnackbar(Properties.Resources.Error_Common_Verify, Properties.Resources.Validation_ProxyIpAndPortMismatch, ControlAppearance.Danger, SymbolRegular.Warning24);
-        //             return;
-        //         }
-        //         proxyPort = port;
-        //     }
+            // 3. 代理参数解析
+            int? proxyPort = null;
+            string proxyHost = string.Empty;
+            if (UseSshProxy)
+            {
+                proxyHost = SshProxyHost?.Trim() ?? string.Empty;
+                if (!int.TryParse(SshProxyPort, out int port) || string.IsNullOrWhiteSpace(proxyHost))
+                {
+                    ShowSnackbar(Properties.Resources.Error_Common_Verify, Properties.Resources.Validation_ProxyIpAndPortMismatch, ControlAppearance.Danger, SymbolRegular.Warning24);
+                    return;
+                }
+                proxyPort = port;
+            }
 
-        //     // 4. UI 切换：隐藏卡片，显示控制台
-        //     ShowPartitionSelector = false;
-        //     ShowSshForm = false;
-        //     ShowLogConsole = true;
-        //     driveTask.Status = ExHyperV.Models.TaskStatus.Running;
+            // 4. UI 切换：隐藏卡片，显示控制台
+            ShowPartitionSelector = false;
+            ShowSshForm = false;
+            ShowLogConsole = true;
+            driveTask.Status = ExHyperV.Models.TaskStatus.Running;
 
-        //     AppendLog(Properties.Resources.Msg_Gpu_DeployStart);
-        //     AppendLog($"[Info] Selected Script: {SelectedLinuxScript.Name}");
-        //     if (UseSshProxy) AppendLog(string.Format(Properties.Resources.Msg_Gpu_UsingProxy, proxyHost, proxyPort));
+            AppendLog(Properties.Resources.Msg_Gpu_DeployStart);
+            AppendLog($"[Info] Selected Script: {SelectedLinuxScript.Name}");
+            if (UseSshProxy) AppendLog(string.Format(Properties.Resources.Msg_Gpu_UsingProxy, proxyHost, proxyPort));
 
-        //     // 5. 组装凭据 (强制 KeepGlobalProxySetting 为 false)
-        //     var creds = new SshCredentials
-        //     {
-        //         Host = SshHost,
-        //         Port = SshPort,
-        //         Username = SshUsername,
-        //         Password = SshPassword,
-        //         UseProxy = this.UseSshProxy,
-        //         ProxyHost = this.UseSshProxy ? proxyHost : null,
-        //         ProxyPort = this.UseSshProxy ? proxyPort : null,
-        //         InstallGraphics = InstallGraphics
-        //     };
+            // 5. 组装凭据 (强制 KeepGlobalProxySetting 为 false)
+            var creds = new SshCredentials
+            {
+                Host = SshHost,
+                Port = SshPort,
+                Username = SshUsername,
+                Password = SshPassword,
+                UseProxy = this.UseSshProxy,
+                ProxyHost = this.UseSshProxy ? proxyHost : null,
+                ProxyPort = this.UseSshProxy ? proxyPort : null,
+                InstallGraphics = InstallGraphics
+            };
 
-        //     // 6. 执行部署
-        //     string result = await _vmGpuService.ProvisionLinuxGpuAsync(
-        //         SelectedVm.Name,
-        //         SelectedLinuxScript,
-        //         creds,
-        //         msg => {
-        //             if (msg.Contains("[STEP:"))
-        //             {
-        //                 var match = System.Text.RegularExpressions.Regex.Match(msg, @"\[STEP:\s*(.*?)\]");
-        //                 if (match.Success)
-        //                 {
-        //                     Application.Current.Dispatcher.Invoke(() => {
-        //                         driveTask.Description = match.Groups[1].Value;
-        //                     });
-        //                 }
-        //             }
-        //             AppendLog(msg);
-        //         },
-        //         token
-        //     );
+            // 6. 执行部署
+            string result = await _vmGpuService.ProvisionLinuxGpuAsync(
+                SelectedVm.Name,
+                SelectedLinuxScript,
+                creds,
+                msg => {
+                    if (msg.Contains("[STEP:"))
+                    {
+                        var match = System.Text.RegularExpressions.Regex.Match(msg, @"\[STEP:\s*(.*?)\]");
+                        if (match.Success)
+                        {
+                            Application.Current.Dispatcher.Invoke(() => {
+                                driveTask.Description = match.Groups[1].Value;
+                            });
+                        }
+                    }
+                    AppendLog(msg);
+                },
+                token
+            );
 
-        //     // 7. 流程结束判定
-        //     if (result == "OK" || (result.Contains("successfully") && result.Contains("signing")))
-        //     {
-        //         driveTask.Status = ExHyperV.Models.TaskStatus.Success;
-        //         driveTask.Description = Properties.Resources.Msg_Gpu_LinuxDeployDone;
-        //         _currentProcessingGpuAdapterId = null;
-        //         AppendLog(Properties.Resources.Msg_Gpu_LinuxDeployDone);
-        //         await FinishWorkflowAsync();
-        //     }
-        //     else
-        //     {
-        //         // 失败回滚
-        //         if (!string.IsNullOrEmpty(_currentProcessingGpuAdapterId))
-        //         {
-        //             AppendLog(Properties.Resources.Error_Gpu_LinuxRollback);
-        //             await _vmGpuService.RemoveGpuPartitionAsync(SelectedVm.Name, _currentProcessingGpuAdapterId);
-        //             _currentProcessingGpuAdapterId = null;
-        //         }
+            // 7. 流程结束判定
+            if (result == "OK" || (result.Contains("successfully") && result.Contains("signing")))
+            {
+                driveTask.Status = ExHyperV.Models.TaskStatus.Success;
+                driveTask.Description = Properties.Resources.Msg_Gpu_LinuxDeployDone;
+                _currentProcessingGpuAdapterId = null;
+                AppendLog(Properties.Resources.Msg_Gpu_LinuxDeployDone);
+                await FinishWorkflowAsync();
+            }
+            else
+            {
+                // 失败回滚
+                if (!string.IsNullOrEmpty(_currentProcessingGpuAdapterId))
+                {
+                    AppendLog(Properties.Resources.Error_Gpu_LinuxRollback);
+                    await _vmGpuService.RemoveGpuPartitionAsync(SelectedVm.Name, _currentProcessingGpuAdapterId);
+                    _currentProcessingGpuAdapterId = null;
+                }
 
-        //         driveTask.Status = ExHyperV.Models.TaskStatus.Failed;
-        //         driveTask.Description = result;
-        //         AppendLog(string.Format(Properties.Resources.Error_Gpu_DeployFatal, result));
-        //     }
-        // }
-        // // 返回分区选择列表
+                driveTask.Status = ExHyperV.Models.TaskStatus.Failed;
+                driveTask.Description = result;
+                AppendLog(string.Format(Properties.Resources.Error_Gpu_DeployFatal, result));
+            }
+        }
+        // 返回分区选择列表
         [RelayCommand]
         private void GoBackToPartitionList()
         {
@@ -3438,20 +3548,62 @@ namespace ExHyperV.ViewModels
         // ----------------------------------------------------------------------------------
 
         // 显示 Snackbar 通知
+        private Snackbar? _currentSnackbar;
         private void ShowSnackbar(string title, string message, ControlAppearance appearance, SymbolRegular icon)
         {
-            Application.Current.Dispatcher.Invoke(() =>
-            {
+            // 使用 Background 优先级，同时加上 async 支持 await 操作
+            Application.Current.Dispatcher.InvokeAsync(async () => {
                 var presenter = Application.Current.MainWindow?.FindName("SnackbarPresenter") as SnackbarPresenter;
                 if (presenter != null)
                 {
-                    var snack = new Snackbar(presenter) { Title = title, Content = message, Appearance = appearance, Icon = new SymbolIcon(icon), Timeout = TimeSpan.FromSeconds(3) };
+                    // 核心修复 1：暴力清空积压队列
+                    try
+                    {
+                        var queueProp = typeof(SnackbarPresenter).GetProperty("Queue", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                        var queueObj = queueProp?.GetValue(presenter);
+                        queueObj?.GetType().GetMethod("Clear")?.Invoke(queueObj, null);
+                    }
+                    catch { }
+
+                    // 核心修复 2：使用官方推荐的 HideCurrent() 安全关闭
+                    try
+                    {
+                        await presenter.HideCurrent();
+                    }
+                    catch { }
+
+                    // --- 核心优化：动态计算弹窗留存时间 ---
+                    TimeSpan timeout;
+                    if (appearance == ControlAppearance.Danger || appearance == ControlAppearance.Caution)
+                    {
+                        int msgLength = message?.Length ?? 0;
+
+                        // 算法：每 20 个字符增加 1 秒
+                        int calculatedSeconds = msgLength / 20;
+
+                        calculatedSeconds = Math.Clamp(calculatedSeconds, 2, 60);
+
+                        timeout = TimeSpan.FromSeconds(calculatedSeconds);
+                    }
+                    else
+                    {
+                        // 成功或常规消息固定 2 秒
+                        timeout = TimeSpan.FromSeconds(2);
+                    }
+
+                    var snack = new Snackbar(presenter)
+                    {
+                        Title = title,
+                        Content = message,
+                        Appearance = appearance,
+                        Icon = new SymbolIcon(icon),
+                        Timeout = timeout
+                    };
+
                     snack.Show();
                 }
-            });
+            }, System.Windows.Threading.DispatcherPriority.Background);
         }
-
-        // 获取操作状态的乐观显示文本
         private string GetOptimisticText(string action) => action switch { "Start" => Properties.Resources.Status_Starting, "Restart" => Properties.Resources.Status_Restarting, "Stop" => Properties.Resources.Status_StoppingPresent, "TurnOff" => Properties.Resources.Status_Off, "Save" => Properties.Resources.Status_Saving, "Suspend" => Properties.Resources.Status_Suspending, _ => Properties.Resources.Status_Processing };
 
         // 追加日志到控制台
@@ -3459,8 +3611,7 @@ namespace ExHyperV.ViewModels
         {
             if (string.IsNullOrWhiteSpace(message)) return;
             string timestamp = DateTime.Now.ToString("HH:mm:ss");
-            Application.Current.Dispatcher.Invoke(() =>
-            {
+            Application.Current.Dispatcher.Invoke(() => {
                 GpuDeploymentLog += $"[{timestamp}] {message}{Environment.NewLine}";
             });
         }
@@ -3499,20 +3650,16 @@ namespace ExHyperV.ViewModels
                 if (driveTask != null)
                 {
                     driveTask.Status = ExHyperV.Models.TaskStatus.Pending;
-                    // driveTask.Description = SelectedPartition.OsType == OperatingSystemType.Linux
-                    //     ? Properties.Resources.Msg_Gpu_SshConfirm
-                    //     : Properties.Resources.Msg_Gpu_SelectPart;
-                    if (SelectedPartition.OsType != OperatingSystemType.Linux)
-                    {
-                        driveTask.Description = Properties.Resources.Msg_Gpu_SelectPart;
-                    }
+                    driveTask.Description = SelectedPartition.OsType == OperatingSystemType.Linux
+                        ? Properties.Resources.Msg_Gpu_SshConfirm
+                        : Properties.Resources.Msg_Gpu_SelectPart;
                 }
 
-                // if (SelectedPartition.OsType == OperatingSystemType.Linux)
-                // {
-                //     ShowPartitionSelector = true;
-                //     ShowSshForm = true;
-                // }
+                if (SelectedPartition.OsType == OperatingSystemType.Linux)
+                {
+                    ShowPartitionSelector = true;
+                    ShowSshForm = true;
+                }
                 else
                 {
                     // Windows 流程重置
