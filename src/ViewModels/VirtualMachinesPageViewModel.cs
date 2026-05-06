@@ -103,9 +103,9 @@ namespace ExHyperV.ViewModels
         [ObservableProperty] private string _parentPath = string.Empty;
         [ObservableProperty] private string _sectorFormat = "Default";
         [ObservableProperty] private string _blockSize = "Default";
-        [ObservableProperty] private string _isoSourceFolderPath = string.Empty;
-        [ObservableProperty] private string _isoVolumeLabel = "NewISO";
-        [ObservableProperty] private string _isoOutputPath = string.Empty;
+        // [ObservableProperty] private string _isoSourceFolderPath = string.Empty;
+        // [ObservableProperty] private string _isoVolumeLabel = "NewISO";
+        // [ObservableProperty] private string _isoOutputPath = string.Empty;
 
         // 选中的物理磁盘与控制器
         [ObservableProperty] private HostDiskInfo _selectedPhysicalDisk;
@@ -1651,7 +1651,7 @@ namespace ExHyperV.ViewModels
     new { Value = (uint)2, Name = "大页粒度" },
     new { Value = (uint)3, Name = "巨型页粒度" }
 };
-            
+
 
         public List<object> MemoryTrackingStateOptions { get; } = new()
 {
@@ -1877,7 +1877,7 @@ namespace ExHyperV.ViewModels
         partial void OnDeviceTypeChanged(string value)
         {
             FilePath = string.Empty;
-            IsoOutputPath = string.Empty;
+            // IsoOutputPath = string.Empty;
 
             OnPropertyChanged(nameof(FilePathPlaceholder));
             OnPropertyChanged(nameof(BrowseButtonText));
@@ -1972,42 +1972,42 @@ namespace ExHyperV.ViewModels
             }
 
             // 验证 ISO 创建参数
-            if (DeviceType == "DvdDrive" && IsNewDisk)
-            {
-                if (string.IsNullOrWhiteSpace(IsoSourceFolderPath))
-                {
-                    ShowSnackbar(Properties.Resources.Error_Common_Args, Properties.Resources.Error_Storage_IsoSource, ControlAppearance.Caution, SymbolRegular.Warning24);
-                    return;
-                }
+            // if (DeviceType == "DvdDrive" && IsNewDisk)
+            // {
+            //     // if (string.IsNullOrWhiteSpace(IsoSourceFolderPath))
+            //     // {
+            //     //     ShowSnackbar(Properties.Resources.Error_Common_Args, Properties.Resources.Error_Storage_IsoSource, ControlAppearance.Caution, SymbolRegular.Warning24);
+            //     //     return;
+            //     // }
 
-                if (string.IsNullOrWhiteSpace(IsoOutputPath))
-                {
-                    ShowSnackbar(Properties.Resources.Error_Common_Args, Properties.Resources.Error_Storage_IsoPath, ControlAppearance.Caution, SymbolRegular.Warning24);
-                    return;
-                }
+            //     // if (string.IsNullOrWhiteSpace(IsoOutputPath))
+            //     // {
+            //     //     ShowSnackbar(Properties.Resources.Error_Common_Args, Properties.Resources.Error_Storage_IsoPath, ControlAppearance.Caution, SymbolRegular.Warning24);
+            //     //     return;
+            //     // }
 
-                target = IsoOutputPath;
+            //     target = IsoOutputPath;
 
-                var outputDir = Path.GetDirectoryName(IsoOutputPath);
-                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-                {
-                    try
-                    {
-                        Directory.CreateDirectory(outputDir);
-                    }
-                    catch (Exception ex)
-                    {
-                        ShowSnackbar(Properties.Resources.Common_Error, string.Format(Properties.Resources.Error_Storage_DirFail, ex.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
-                        return;
-                    }
-                }
+            //     var outputDir = Path.GetDirectoryName(IsoOutputPath);
+            //     if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            //     {
+            //         try
+            //         {
+            //             Directory.CreateDirectory(outputDir);
+            //         }
+            //         catch (Exception ex)
+            //         {
+            //             ShowSnackbar(Properties.Resources.Common_Error, string.Format(Properties.Resources.Error_Storage_DirFail, ex.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+            //             return;
+            //         }
+            //     }
 
-                if (!Directory.Exists(IsoSourceFolderPath))
-                {
-                    ShowSnackbar(Properties.Resources.Common_Error, Properties.Resources.Error_Storage_SourceNoExist, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
-                    return;
-                }
-            }
+            //     if (!Directory.Exists(IsoSourceFolderPath))
+            //     {
+            //         ShowSnackbar(Properties.Resources.Common_Error, Properties.Resources.Error_Storage_SourceNoExist, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+            //         return;
+            //     }
+            // }
 
             await AddDriveWrapperAsync(
                 DeviceType,
@@ -2016,9 +2016,10 @@ namespace ExHyperV.ViewModels
                 IsNewDisk,
                 NewDiskSizeInt,
                 SelectedVhdType,
-                ParentPath,
-                IsoSourceFolderPath,
-                IsoVolumeLabel);
+                ParentPath
+                // IsoSourceFolderPath,
+                // IsoVolumeLabel
+                );
 
             CurrentViewType = VmDetailViewType.StorageSettings;
         }
@@ -2056,15 +2057,15 @@ namespace ExHyperV.ViewModels
         }
 
         // 浏览文件夹 (用于ISO制作)
-        [RelayCommand]
-        private void BrowseFolder()
-        {
-            var dialog = new Microsoft.Win32.OpenFolderDialog
-            {
-                InitialDirectory = string.IsNullOrWhiteSpace(IsoSourceFolderPath) ? string.Empty : IsoSourceFolderPath
-            };
-            if (dialog.ShowDialog() == true) IsoSourceFolderPath = dialog.FolderName;
-        }
+        // [RelayCommand]
+        // private void BrowseFolder()
+        // {
+        //     var dialog = new Microsoft.Win32.OpenFolderDialog
+        //     {
+        //         InitialDirectory = string.IsNullOrWhiteSpace(IsoSourceFolderPath) ? string.Empty : IsoSourceFolderPath
+        //     };
+        //     if (dialog.ShowDialog() == true) IsoSourceFolderPath = dialog.FolderName;
+        // }
 
         // 浏览父级磁盘
         [RelayCommand]
@@ -2079,23 +2080,23 @@ namespace ExHyperV.ViewModels
         }
 
         // 浏览保存ISO路径
-        [RelayCommand]
-        private void BrowseSaveIso()
-        {
-            var saveDialog = new Microsoft.Win32.SaveFileDialog
-            {
-                Title = Properties.Resources.Title_SaveIso,
-                Filter = Properties.Resources.Filter_IsoExt,
-                DefaultExt = ".iso",
-                InitialDirectory = string.IsNullOrWhiteSpace(IsoOutputPath) ? string.Empty : System.IO.Path.GetDirectoryName(IsoOutputPath),
-                FileName = string.IsNullOrWhiteSpace(IsoOutputPath) ? $"{IsoVolumeLabel}.iso" : System.IO.Path.GetFileName(IsoOutputPath)
-            };
+        // [RelayCommand]
+        // private void BrowseSaveIso()
+        // {
+        //     var saveDialog = new Microsoft.Win32.SaveFileDialog
+        //     {
+        //         Title = Properties.Resources.Title_SaveIso,
+        //         Filter = Properties.Resources.Filter_IsoExt,
+        //         DefaultExt = ".iso",
+        //         InitialDirectory = string.IsNullOrWhiteSpace(IsoOutputPath) ? string.Empty : System.IO.Path.GetDirectoryName(IsoOutputPath),
+        //         FileName = string.IsNullOrWhiteSpace(IsoOutputPath) ? $"{IsoVolumeLabel}.iso" : System.IO.Path.GetFileName(IsoOutputPath)
+        //     };
 
-            if (saveDialog.ShowDialog() == true)
-            {
-                IsoOutputPath = saveDialog.FileName;
-            }
-        }
+        //     if (saveDialog.ShowDialog() == true)
+        //     {
+        //         IsoOutputPath = saveDialog.FileName;
+        //     }
+        // }
 
         // 添加驱动器的包装函数
         public async Task AddDriveWrapperAsync(string driveType, bool isPhysical, string pathOrNumber, bool isNew, int sizeGb = 128, string vhdType = "Dynamic", string parentPath = "", string isoSourcePath = null, string isoVolumeLabel = null)
@@ -2127,9 +2128,9 @@ namespace ExHyperV.ViewModels
                     vhdType: vhdType,
                     parentPath: parentPath,
                     sectorFormat: SectorFormat,
-                    blockSize: BlockSize,
-                    isoSourcePath: isoSourcePath,
-                    isoVolumeLabel: isoVolumeLabel
+                    blockSize: BlockSize
+                // isoSourcePath: isoSourcePath,
+                // isoVolumeLabel: isoVolumeLabel
                 );
 
                 if (result.Success)
@@ -3525,7 +3526,8 @@ namespace ExHyperV.ViewModels
         private void ShowSnackbar(string title, string message, ControlAppearance appearance, SymbolRegular icon)
         {
             // 使用 Background 优先级，同时加上 async 支持 await 操作
-            Application.Current.Dispatcher.InvokeAsync(async () => {
+            Application.Current.Dispatcher.InvokeAsync(async () =>
+            {
                 var presenter = Application.Current.MainWindow?.FindName("SnackbarPresenter") as SnackbarPresenter;
                 if (presenter != null)
                 {
@@ -3584,7 +3586,8 @@ namespace ExHyperV.ViewModels
         {
             if (string.IsNullOrWhiteSpace(message)) return;
             string timestamp = DateTime.Now.ToString("HH:mm:ss");
-            Application.Current.Dispatcher.Invoke(() => {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
                 GpuDeploymentLog += $"[{timestamp}] {message}{Environment.NewLine}";
             });
         }

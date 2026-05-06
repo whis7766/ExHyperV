@@ -1,6 +1,6 @@
 ﻿using System.IO;
 using System.Text.RegularExpressions;
-using DiscUtils.Iso9660;
+// using DiscUtils.Iso9660;
 using ExHyperV.Models;
 using ExHyperV.Tools;
 using Microsoft.Management.Infrastructure;
@@ -49,7 +49,8 @@ namespace ExHyperV.Services
                         allResources.AddRange(rasd);
                         allResources.AddRange(sasd);
 
-                        var controllers = allResources.Where(res => {
+                        var controllers = allResources.Where(res =>
+                        {
                             int rt = Convert.ToInt32(res.CimInstanceProperties["ResourceType"]?.Value ?? 0);
                             return rt == 5 || rt == 6;
                         }).OrderBy(c => c.CimInstanceProperties["ResourceType"]?.Value).ToList();
@@ -97,7 +98,8 @@ namespace ExHyperV.Services
                                     string slotId = slot.CimInstanceProperties["InstanceID"]?.Value?.ToString() ?? "";
                                     if (childrenMap.ContainsKey(slotId))
                                     {
-                                        media = childrenMap[slotId].FirstOrDefault(m => {
+                                        media = childrenMap[slotId].FirstOrDefault(m =>
+                                        {
                                             int t = Convert.ToInt32(m.CimInstanceProperties["ResourceType"]?.Value);
                                             return t == 31 || t == 16 || t == 22;
                                         });
@@ -370,15 +372,15 @@ namespace ExHyperV.Services
             string vmName, string controllerType, int controllerNumber, int location, string driveType,
             string pathOrNumber, bool isPhysical, bool isNew = false, int sizeGb = 256,
             string vhdType = "Dynamic", string parentPath = "", string sectorFormat = "Default",
-            string blockSize = "Default", string isoSourcePath = null, string isoVolumeLabel = null)
+            string blockSize = "Default")
         {
             string psPath = string.IsNullOrWhiteSpace(pathOrNumber) ? "$null" : $"'{pathOrNumber}'";
 
-            if (driveType == "DvdDrive" && isNew && !string.IsNullOrWhiteSpace(isoSourcePath))
-            {
-                var createResult = await CreateIsoFromDirectoryAsync(isoSourcePath, pathOrNumber, isoVolumeLabel);
-                if (!createResult.Success) return (false, createResult.Message, controllerType, controllerNumber, location);
-            }
+            // if (driveType == "DvdDrive" && isNew && !string.IsNullOrWhiteSpace(isoSourcePath))
+            // {
+            //     var createResult = await CreateIsoFromDirectoryAsync(isoSourcePath, pathOrNumber, isoVolumeLabel);
+            //     if (!createResult.Success) return (false, createResult.Message, controllerType, controllerNumber, location);
+            // }
 
             string script = $@"
                 $ErrorActionPreference = 'Stop'
@@ -514,97 +516,97 @@ namespace ExHyperV.Services
         // ============================================================
 
         // 使用 DiscUtils 库将指定的本地文件夹打包成符合 ISO 9660 / Joliet 标准的镜像文件
-        private async Task<(bool Success, string Message)> CreateIsoFromDirectoryAsync(string sourceDirectory, string targetIsoPath, string volumeLabel)
-        {
-            var sourceDirInfo = new DirectoryInfo(sourceDirectory);
-            if (!sourceDirInfo.Exists) return (false, "Iso_Error_SourceDirNotFound");
+        // private async Task<(bool Success, string Message)> CreateIsoFromDirectoryAsync(string sourceDirectory, string targetIsoPath, string volumeLabel)
+        // {
+        //     var sourceDirInfo = new DirectoryInfo(sourceDirectory);
+        //     if (!sourceDirInfo.Exists) return (false, "Iso_Error_SourceDirNotFound");
 
-            const long MaxFileSize = 4294967295;
-            const int MaxFileNameLength = 103;
-            const int MaxPathLength = 240;
-            const int MaxDirectoryDepth = 8;
-            const int MaxVolumeLabelLength = 31;
-            const long MaxTotalSize = 8796093022208;
+        //     const long MaxFileSize = 4294967295;
+        //     const int MaxFileNameLength = 103;
+        //     const int MaxPathLength = 240;
+        //     const int MaxDirectoryDepth = 8;
+        //     const int MaxVolumeLabelLength = 31;
+        //     const long MaxTotalSize = 8796093022208;
 
-            string finalVolumeLabel = string.IsNullOrWhiteSpace(volumeLabel)
-                ? sourceDirInfo.Name
-                : volumeLabel;
+        //     string finalVolumeLabel = string.IsNullOrWhiteSpace(volumeLabel)
+        //         ? sourceDirInfo.Name
+        //         : volumeLabel;
 
-            if (finalVolumeLabel.Length > MaxVolumeLabelLength)
-                return (false, "Iso_Error_VolumeLabelTooLong");
+        //     if (finalVolumeLabel.Length > MaxVolumeLabelLength)
+        //         return (false, "Iso_Error_VolumeLabelTooLong");
 
-            finalVolumeLabel = Regex.Replace(finalVolumeLabel, @"[^A-Za-z0-9_\- ]", "_");
-            if (string.IsNullOrEmpty(finalVolumeLabel))
-                finalVolumeLabel = "NewISO";
+        //     finalVolumeLabel = Regex.Replace(finalVolumeLabel, @"[^A-Za-z0-9_\- ]", "_");
+        //     if (string.IsNullOrEmpty(finalVolumeLabel))
+        //         finalVolumeLabel = "NewISO";
 
-            return await Task.Run(() => {
-                try
-                {
-                    var allItems = Directory.EnumerateFileSystemEntries(sourceDirectory, "*", SearchOption.AllDirectories).ToList();
+        //     return await Task.Run(() => {
+        //         try
+        //         {
+        //             var allItems = Directory.EnumerateFileSystemEntries(sourceDirectory, "*", SearchOption.AllDirectories).ToList();
 
-                    if (allItems.Count == 0)
-                        return (false, "Iso_Error_SourceDirEmpty");
+        //             if (allItems.Count == 0)
+        //                 return (false, "Iso_Error_SourceDirEmpty");
 
-                    long totalSize = 0;
+        //             long totalSize = 0;
 
-                    foreach (var item in allItems)
-                    {
-                        string relativePath = Path.GetRelativePath(sourceDirInfo.FullName, item);
-                        string fileName = Path.GetFileName(item);
+        //             foreach (var item in allItems)
+        //             {
+        //                 string relativePath = Path.GetRelativePath(sourceDirInfo.FullName, item);
+        //                 string fileName = Path.GetFileName(item);
 
-                        if (fileName.Length > MaxFileNameLength)
-                            return (false, $"Iso_Error_FileNameTooLong");
+        //                 if (fileName.Length > MaxFileNameLength)
+        //                     return (false, $"Iso_Error_FileNameTooLong");
 
-                        if (relativePath.Length > MaxPathLength)
-                            return (false, $"Iso_Error_PathTooLong");
+        //                 if (relativePath.Length > MaxPathLength)
+        //                     return (false, $"Iso_Error_PathTooLong");
 
-                        int depth = relativePath.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries).Length;
+        //                 int depth = relativePath.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries).Length;
 
-                        if (File.Exists(item))
-                        {
-                            var fileInfo = new FileInfo(item);
-                            if (depth - 1 >= MaxDirectoryDepth)
-                                return (false, "Iso_Error_FileDepthTooDeep");
-                            if (fileInfo.Length >= MaxFileSize)
-                                return (false, "Iso_Error_FileTooLarge");
+        //                 if (File.Exists(item))
+        //                 {
+        //                     var fileInfo = new FileInfo(item);
+        //                     if (depth - 1 >= MaxDirectoryDepth)
+        //                         return (false, "Iso_Error_FileDepthTooDeep");
+        //                     if (fileInfo.Length >= MaxFileSize)
+        //                         return (false, "Iso_Error_FileTooLarge");
 
-                            totalSize += fileInfo.Length;
-                            if (totalSize >= MaxTotalSize)
-                                return (false, "Iso_Error_TotalSizeTooLarge");
-                        }
-                        else if (Directory.Exists(item))
-                        {
-                            if (depth > MaxDirectoryDepth)
-                                return (false, "Iso_Error_DirectoryDepthTooDeep");
-                        }
-                    }
+        //                     totalSize += fileInfo.Length;
+        //                     if (totalSize >= MaxTotalSize)
+        //                         return (false, "Iso_Error_TotalSizeTooLarge");
+        //                 }
+        //                 else if (Directory.Exists(item))
+        //                 {
+        //                     if (depth > MaxDirectoryDepth)
+        //                         return (false, "Iso_Error_DirectoryDepthTooDeep");
+        //                 }
+        //             }
 
-                    var targetDir = Path.GetDirectoryName(targetIsoPath);
-                    if (!string.IsNullOrEmpty(targetDir) && !Directory.Exists(targetDir))
-                    {
-                        Directory.CreateDirectory(targetDir);
-                    }
+        //             // var targetDir = Path.GetDirectoryName(targetIsoPath);
+        //             // if (!string.IsNullOrEmpty(targetDir) && !Directory.Exists(targetDir))
+        //             // {
+        //             //     Directory.CreateDirectory(targetDir);
+        //             // }
 
-                    var builder = new CDBuilder
-                    {
-                        UseJoliet = true,
-                        VolumeIdentifier = finalVolumeLabel
-                    };
+        //             // var builder = new CDBuilder
+        //             // {
+        //             //     UseJoliet = true,
+        //             //     VolumeIdentifier = finalVolumeLabel
+        //             // };
 
-                    foreach (var file in Directory.GetFiles(sourceDirectory, "*", SearchOption.AllDirectories))
-                    {
-                        builder.AddFile(Path.GetRelativePath(sourceDirectory, file), file);
-                    }
+        //             // foreach (var file in Directory.GetFiles(sourceDirectory, "*", SearchOption.AllDirectories))
+        //             // {
+        //             //     builder.AddFile(Path.GetRelativePath(sourceDirectory, file), file);
+        //             // }
 
-                    builder.Build(targetIsoPath);
-                    return (true, "Iso_Msg_CreateSuccess");
-                }
-                catch (Exception ex)
-                {
-                    return (false, $"Iso_Error_BuildFailed: {ex.Message}");
-                }
-            });
-        }
+        //             // builder.Build(targetIsoPath);
+        //             // return (true, "Iso_Msg_CreateSuccess");
+        //         // }
+        //         // catch (Exception ex)
+        //         // {
+        //         //     return (false, $"Iso_Error_BuildFailed: {ex.Message}");
+        //         // }
+        //     });
+        // }
 
         // ============================================================
         // 底层辅助工具：PowerShell 执行与脚本封装
