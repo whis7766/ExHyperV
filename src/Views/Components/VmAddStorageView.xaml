@@ -258,14 +258,6 @@
                                         <DataTrigger Binding="{Binding IsPhysicalSource}" Value="False">
                                             <Setter Property="Visibility" Value="Visible" />
                                         </DataTrigger>
-                                        <!--  隐藏：新建 ISO 的情况  -->
-                                        <MultiDataTrigger>
-                                            <MultiDataTrigger.Conditions>
-                                                <Condition Binding="{Binding IsNewDisk}" Value="True" />
-                                                <Condition Binding="{Binding DeviceType}" Value="DvdDrive" />
-                                            </MultiDataTrigger.Conditions>
-                                            <Setter Property="Visibility" Value="Collapsed" />
-                                        </MultiDataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </StackPanel.Style>
